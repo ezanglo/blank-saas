@@ -1,3 +1,4 @@
+import { withPayload } from "@payloadcms/next/withPayload";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -9,8 +10,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.s3.*.amazonaws.com" },
     ],
   },
-  serverExternalPackages: ["better-auth"],
+  serverExternalPackages: ["better-auth", "payload"],
   transpilePackages: ["@react-email/components"],
 };
 
-export default nextConfig;
+export default withPayload(nextConfig);

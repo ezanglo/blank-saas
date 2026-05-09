@@ -1,0 +1,23 @@
+import type { CollectionConfig } from "payload";
+
+export const Accounts: CollectionConfig = {
+  slug: "user-accounts",
+  fields: [
+    {
+      name: "userId",
+      type: "relationship",
+      relationTo: "users",
+      required: true,
+      index: true,
+    },
+    { name: "accountId", type: "text", required: true },
+    { name: "providerId", type: "text", required: true, index: true },
+    { name: "accessToken", type: "text" },
+    { name: "refreshToken", type: "text" },
+    { name: "accessTokenExpiresAt", type: "date" },
+    { name: "refreshTokenExpiresAt", type: "date" },
+    { name: "scope", type: "text" },
+    { name: "idToken", type: "text" },
+    { name: "password", type: "text" },
+  ],
+};

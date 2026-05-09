@@ -1,0 +1,98 @@
+import type { CollectionConfig } from "payload";
+
+export const Users: CollectionConfig = {
+  slug: "users",
+  admin: { useAsTitle: "email" },
+  auth: {
+    disableLocalStrategy: true,
+    strategies: [
+      {
+        name: "better-auth",
+        authenticate: async ({ headers, payload }) => {
+          try {
+            const { auth } = await import("@/lib/auth");
+            const userSession = await auth.api.getSession({ headers });
+
+            if (!userSession?.user) return { user: null };
+
+            const userData = await payload.findByID({
+              collection: "users",
+              id: userSession.user.id,
+            });
+
+            return {
+              user: {
+                ...userData,
+                collection: "users",
+              },
+            };
+          } catch (err) {
+            payload.logger.error(err);
+            return { user: null };
+          }
+        },
+      },
+    ],
+  },
+  endpoints: [
+    {
+      path: "/logout",
+      method: "post",
+      handler: async (req) => {
+        const { auth } = await import("@/lib/auth");
+        await auth.api.signOut({ headers: req.headers });
+        return Response.json(
+          { message: "Token revoked successfully" },
+          { status: 200, headers: req.headers },
+        );
+      },
+    },
+  ],
+  access: {
+    admin: ({ req }) => req.user?.role === "admin",
+    read: ({ req }) => req.user?.role === "admin",
+    create: ({ req }) => req.user?.role === "admin",
+    update: ({ req }) => req.user?.role === "admin",
+    delete: ({ req }) => req.user?.role === "admin",
+  },
+  hooks: {
+    beforeDelete: [
+      async ({ id, req }) => {
+        await req.payload.delete({
+          collection: "user-sessions",
+          where: { userId: { equals: id } },
+          req,
+          overrideAccess: true,
+        });
+        await req.payload.delete({
+          collection: "user-accounts",
+          where: { userId: { equals: id } },
+          req,
+          overrideAccess: true,
+        });
+        await req.payload.delete({
+          collection: "members",
+          where: { user: { equals: id } },
+          req,
+          overrideAccess: true,
+        });
+        await req.payload.delete({
+          collection: "invitations",
+          where: { inviter: { equals: id } },
+          req,
+          overrideAccess: true,
+        });
+      },
+    ],
+  },
+  fields: [
+    { name: "name", type: "text", required: true, index: true },
+    { name: "email", type: "text", required: true, unique: true, index: true },
+    { name: "emailVerified", type: "checkbox", required: true },
+    { name: "image", type: "text" },
+    { name: "role", type: "text" },
+    { name: "banned", type: "checkbox", defaultValue: false },
+    { name: "banReason", type: "text" },
+    { name: "banExpires", type: "date" },
+  ],
+};
