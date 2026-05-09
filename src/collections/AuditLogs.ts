@@ -6,6 +6,12 @@ export const AuditLogs: CollectionConfig = {
     useAsTitle: "action",
     defaultColumns: ["action", "organization", "actorEmail", "createdAt"],
   },
+  access: {
+    read: ({ req }) => Boolean(req.user),
+    create: () => false,
+    update: () => false,
+    delete: ({ req }) => req.user?.role === "admin",
+  },
   fields: [
     {
       name: "organization",

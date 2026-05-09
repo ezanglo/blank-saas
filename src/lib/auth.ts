@@ -1,8 +1,9 @@
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth";
-import { admin, organization } from "better-auth/plugins";
+import { admin, magicLink, organization, twoFactor } from "better-auth/plugins";
 import { and, eq, ne, sql } from "@payloadcms/db-postgres/drizzle";
 
+import { sendTransactionalEmail } from "@/lib/email";
 import { db } from "@/lib/db";
 import * as schema from "@/payload-generated-schema";
 
@@ -70,6 +71,7 @@ export const auth = betterAuth({
       organization: schema.organizations,
       member: schema.members,
       invitation: schema.invitations,
+      twoFactor: schema.two_factors,
     },
     usePlural: false,
   }),
@@ -77,7 +79,11 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      console.log("[Auth] sendResetPassword", user.email, url);
+      await sendTransactionalEmail({
+        to: user.email,
+        subject: "Reset your password",
+        text: `Reset link: ${url}`,
+      });
     },
     onPasswordReset: async ({ user }) => {
       const now = new Date().toISOString();
@@ -89,7 +95,11 @@ export const auth = betterAuth({
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
-      console.log("[Auth] sendVerificationEmail", user.email, url);
+      await sendTransactionalEmail({
+        to: user.email,
+        subject: "Verify your email",
+        text: `Verify: ${url}`,
+      });
     },
     sendOnSignUp: true,
     sendOnSignIn: true,
@@ -117,6 +127,16 @@ export const auth = betterAuth({
     admin({
       adminRoles: ["admin"],
       allowImpersonatingAdmins: true,
+    }),
+    twoFactor(),
+    magicLink({
+      sendMagicLink: async ({ email, url }) => {
+        await sendTransactionalEmail({
+          to: email,
+          subject: "Your sign-in link",
+          text: `Sign in: ${url}`,
+        });
+      },
     }),
     organization({
       organizationHooks: {
@@ -146,7 +166,8 @@ export const auth = betterAuth({
           }
           const emailRaw = (invitation as { email?: string })?.email;
           const inviteOrgId =
-            (invitation as { organizationId?: string })?.organizationId ?? orgId;
+            (invitation as { organizationId?: string })?.organizationId ??
+            orgId;
           if (typeof emailRaw === "string" && emailRaw.trim()) {
             await cancelOtherPendingInvitations({
               organizationId: inviteOrgId,
@@ -166,12 +187,12 @@ export const auth = betterAuth({
         }
         const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
         const inviteLink = `${appUrl}/invite/${data.id}`;
-        console.log(
-          "[Auth] sendInvitationEmail",
-          data.email,
-          inviteLink,
-          data.organization.name,
-        );
+        await sendTransactionalEmail({
+          to: data.email,
+          subject: `Invitation to ${data.organization.name}`,
+          html: `<p>You were invited to <strong>${data.organization.name}</strong>.</p><p><a href="${inviteLink}">Accept invitation</a></p>`,
+          text: `Join ${data.organization.name}: ${inviteLink}`,
+        });
       },
       schema: {
         session: {

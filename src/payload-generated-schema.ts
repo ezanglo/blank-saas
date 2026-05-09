@@ -62,6 +62,7 @@ export const users = pgTable(
       withTimezone: true,
       precision: 3,
     }),
+    twoFactorEnabled: boolean("two_factor_enabled").default(false),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
@@ -82,6 +83,40 @@ export const users = pgTable(
     uniqueIndex("users_email_idx").on(columns.email),
     index("users_updated_at_idx").on(columns.updatedAt),
     index("users_created_at_idx").on(columns.createdAt),
+  ],
+);
+
+export const two_factors = pgTable(
+  "two_factors",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null",
+      }),
+    secret: varchar("secret").notNull(),
+    backupCodes: varchar("backup_codes").notNull(),
+    verified: boolean("verified").default(true),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    index("two_factors_user_id_idx").on(columns.userId),
+    index("two_factors_updated_at_idx").on(columns.updatedAt),
+    index("two_factors_created_at_idx").on(columns.createdAt),
   ],
 );
 
@@ -568,6 +603,7 @@ export const payload_locked_documents_rels = pgTable(
     parent: uuid("parent_id").notNull(),
     path: varchar("path").notNull(),
     usersID: uuid("users_id"),
+    "two-factorsID": uuid("two_factors_id"),
     mediaID: uuid("media_id"),
     organizationsID: uuid("organizations_id"),
     "user-sessionsID": uuid("user_sessions_id"),
@@ -584,6 +620,9 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_parent_idx").on(columns.parent),
     index("payload_locked_documents_rels_path_idx").on(columns.path),
     index("payload_locked_documents_rels_users_id_idx").on(columns.usersID),
+    index("payload_locked_documents_rels_two_factors_id_idx").on(
+      columns["two-factorsID"],
+    ),
     index("payload_locked_documents_rels_media_id_idx").on(columns.mediaID),
     index("payload_locked_documents_rels_organizations_id_idx").on(
       columns.organizationsID,
@@ -619,6 +658,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["usersID"]],
       foreignColumns: [users.id],
       name: "payload_locked_documents_rels_users_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["two-factorsID"]],
+      foreignColumns: [two_factors.id],
+      name: "payload_locked_documents_rels_two_factors_fk",
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["mediaID"]],
@@ -756,6 +800,13 @@ export const payload_migrations = pgTable(
 );
 
 export const relations_users = relations(users, () => ({}));
+export const relations_two_factors = relations(two_factors, ({ one }) => ({
+  userId: one(users, {
+    fields: [two_factors.userId],
+    references: [users.id],
+    relationName: "userId",
+  }),
+}));
 export const relations_media = relations(media, () => ({}));
 export const relations_organizations = relations(organizations, ({ one }) => ({
   logo: one(media, {
@@ -839,6 +890,11 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.usersID],
       references: [users.id],
       relationName: "users",
+    }),
+    "two-factorsID": one(two_factors, {
+      fields: [payload_locked_documents_rels["two-factorsID"]],
+      references: [two_factors.id],
+      relationName: "two-factors",
     }),
     mediaID: one(media, {
       fields: [payload_locked_documents_rels.mediaID],
@@ -935,6 +991,7 @@ type DatabaseSchema = {
   enum_feature_flags_environments: typeof enum_feature_flags_environments;
   enum_permissions_subject_type: typeof enum_permissions_subject_type;
   users: typeof users;
+  two_factors: typeof two_factors;
   media: typeof media;
   organizations: typeof organizations;
   user_sessions: typeof user_sessions;
@@ -952,6 +1009,7 @@ type DatabaseSchema = {
   payload_preferences_rels: typeof payload_preferences_rels;
   payload_migrations: typeof payload_migrations;
   relations_users: typeof relations_users;
+  relations_two_factors: typeof relations_two_factors;
   relations_media: typeof relations_media;
   relations_organizations: typeof relations_organizations;
   relations_user_sessions: typeof relations_user_sessions;

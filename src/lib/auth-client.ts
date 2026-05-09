@@ -1,4 +1,9 @@
-import { adminClient, organizationClient } from "better-auth/client/plugins";
+import {
+  adminClient,
+  magicLinkClient,
+  organizationClient,
+  twoFactorClient,
+} from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
@@ -6,5 +11,10 @@ export const authClient = createAuthClient({
     process.env.NEXT_PUBLIC_BETTER_AUTH_URL ??
     process.env.NEXT_PUBLIC_APP_URL ??
     "http://localhost:3000",
-  plugins: [organizationClient(), adminClient()],
+  plugins: [
+    twoFactorClient(),
+    magicLinkClient(),
+    organizationClient(),
+    adminClient(),
+  ],
 });

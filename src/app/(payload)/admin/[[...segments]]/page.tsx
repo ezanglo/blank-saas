@@ -8,7 +8,7 @@ import { importMap } from "../importMap.js";
 
 type Args = {
   params: Promise<{ segments: string[] }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams: Promise<{ [key: string]: string | string[] }>;
 };
 
 export function generateMetadata({ params, searchParams }: Args): Promise<Metadata> {

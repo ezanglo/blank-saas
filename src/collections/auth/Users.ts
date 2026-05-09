@@ -71,6 +71,12 @@ export const Users: CollectionConfig = {
           overrideAccess: true,
         });
         await req.payload.delete({
+          collection: "two-factors",
+          where: { userId: { equals: id } },
+          req,
+          overrideAccess: true,
+        });
+        await req.payload.delete({
           collection: "members",
           where: { user: { equals: id } },
           req,
@@ -94,5 +100,6 @@ export const Users: CollectionConfig = {
     { name: "banned", type: "checkbox", defaultValue: false },
     { name: "banReason", type: "text" },
     { name: "banExpires", type: "date" },
+    { name: "twoFactorEnabled", type: "checkbox", defaultValue: false },
   ],
 };

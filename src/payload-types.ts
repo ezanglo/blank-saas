@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     users: User;
+    'two-factors': TwoFactor;
     media: Media;
     organizations: Organization;
     'user-sessions': UserSession;
@@ -86,6 +87,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
+    'two-factors': TwoFactorsSelect<false> | TwoFactorsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     organizations: OrganizationsSelect<false> | OrganizationsSelect<true>;
     'user-sessions': UserSessionsSelect<false> | UserSessionsSelect<true>;
@@ -149,9 +151,26 @@ export interface User {
   banned?: boolean | null;
   banReason?: string | null;
   banExpires?: string | null;
+  twoFactorEnabled?: boolean | null;
   updatedAt: string;
   createdAt: string;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "two-factors".
+ */
+export interface TwoFactor {
+  id: string;
+  userId: string | User;
+  secret: string;
+  /**
+   * Encrypted backup codes (Better Auth).
+   */
+  backupCodes: string;
+  verified?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -389,6 +408,10 @@ export interface PayloadLockedDocument {
         value: string | User;
       } | null)
     | ({
+        relationTo: 'two-factors';
+        value: string | TwoFactor;
+      } | null)
+    | ({
         relationTo: 'media';
         value: string | Media;
       } | null)
@@ -483,6 +506,19 @@ export interface UsersSelect<T extends boolean = true> {
   banned?: T;
   banReason?: T;
   banExpires?: T;
+  twoFactorEnabled?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "two-factors_select".
+ */
+export interface TwoFactorsSelect<T extends boolean = true> {
+  userId?: T;
+  secret?: T;
+  backupCodes?: T;
+  verified?: T;
   updatedAt?: T;
   createdAt?: T;
 }

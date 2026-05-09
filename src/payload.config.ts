@@ -13,11 +13,13 @@ import { Invitations } from "@/collections/auth/Invitations";
 import { Members } from "@/collections/auth/Members";
 import { Organizations } from "@/collections/auth/Organizations";
 import { Sessions } from "@/collections/auth/Sessions";
+import { TwoFactors } from "@/collections/auth/TwoFactors";
 import { Users } from "@/collections/auth/Users";
 import { Verifications } from "@/collections/auth/Verifications";
 import { FeatureFlags } from "@/collections/FeatureFlags";
 import { Media } from "@/collections/Media";
 import { Permissions } from "@/collections/Permissions";
+import { migrations } from "@/migrations";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -37,6 +39,7 @@ export default buildConfig({
   },
   collections: [
     Users,
+    TwoFactors,
     Media,
     Organizations,
     Sessions,
@@ -59,6 +62,8 @@ export default buildConfig({
     },
     idType: "uuid",
     allowIDOnCreate: true,
+    migrationDir: path.resolve(dirname, "migrations"),
+    prodMigrations: migrations,
     push: false,
     generateSchemaOutputFile: path.resolve(dirname, "payload-generated-schema.ts"),
   }),

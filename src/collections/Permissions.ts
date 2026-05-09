@@ -3,6 +3,12 @@ import type { CollectionConfig } from "payload";
 export const Permissions: CollectionConfig = {
   slug: "permissions",
   admin: { useAsTitle: "subjectId" },
+  access: {
+    read: ({ req }) => Boolean(req.user),
+    create: ({ req }) => req.user?.role === "admin",
+    update: ({ req }) => req.user?.role === "admin",
+    delete: ({ req }) => req.user?.role === "admin",
+  },
   fields: [
     {
       name: "organization",
