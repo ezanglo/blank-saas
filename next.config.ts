@@ -1,5 +1,8 @@
 import { withPayload } from "@payloadcms/next/withPayload";
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
+
+import { securityHeadersConfig } from "./src/lib/security/http-headers";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -12,6 +15,24 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["better-auth", "payload"],
   transpilePackages: ["@react-email/components"],
+  async headers() {
+    return securityHeadersConfig();
+  },
 };
 
-export default withPayload(nextConfig);
+export default withSentryConfig(withPayload(nextConfig), {
+  silent: true,
+  sourcemaps: {
+    disable:
+      process.env.SENTRY_UPLOAD_SOURCEMAPS === "true" || process.env.SENTRY_AUTH_TOKEN
+        ? false
+        : true,
+  },
+  webpack: {
+    excludeServerRoutes: ["/api/webhooks/stripe", "/api/webhooks/svix"],
+  },
+  tunnelRoute:
+    process.env.SENTRY_TUNNEL_ROUTE === "auto"
+      ? true
+      : process.env.SENTRY_TUNNEL_ROUTE?.trim() || undefined,
+});

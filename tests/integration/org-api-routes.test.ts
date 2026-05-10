@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockRequireOrgAdminSession = vi.hoisted(() => vi.fn());
@@ -179,7 +179,7 @@ describe("integration: org API routes", () => {
 
       const { consumeMonthlyQuota } = await import("@/lib/quota/check");
       const { GET } = await import("@/app/api/orgs/[orgId]/audit-logs/export/route");
-      const res = await GET(new Request(`http://localhost/api/orgs/${orgId}/audit-logs/export`), {
+      const res = await GET(new NextRequest(`http://localhost/api/orgs/${orgId}/audit-logs/export`), {
         params: Promise.resolve({ orgId }),
       });
 

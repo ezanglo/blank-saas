@@ -99,6 +99,7 @@ README.md
 - `pnpm test:e2e` passes locally / in CI (with migrate + Postgres).
 - `pnpm test:unit` and `pnpm test:integration` pass in CI with documented env.
 - New contributor can boot from README only.
+- Production operations runbooks (Stripe, Svix, Redis limits, PostHog, CSP, staging smoke): [`docs/runbooks/README.md`](../../docs/runbooks/README.md).
 
 ## Svix environment (Phase 6)
 

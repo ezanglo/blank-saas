@@ -170,6 +170,10 @@ Playwright starts `pnpm dev` automatically unless a server is already running (`
 
 **CI note:** The first user in an empty database is auto-verified; E2E uses fresh flows suitable for that rule. Enable granular permissions UI in CI via `NEXT_PUBLIC_FEATURE_GRANULAR_PERMISSIONS=true` (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
+## Production operations
+
+Operator-facing runbooks (Stripe webhooks, Svix, Redis/Upstash rate limits, PostHog, CSP rollout, staging verification) live under [`docs/runbooks/`](docs/runbooks/README.md). Security headers and optional Sentry integration are wired in [`next.config.ts`](next.config.ts) — see comments in [`.env.example`](.env.example) for `SECURITY_*` and `SENTRY_*` variables.
+
 ## Stripe (billing)
 
 Use test keys from the Stripe Dashboard. Local webhook forwarding:
