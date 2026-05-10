@@ -47,15 +47,33 @@ src/lib/auth-client.ts
 src/lib/email.ts                     # transactional email (SMTP or console stub)
 src/lib/auth/payload-access.ts
 src/lib/auth/headers.ts
+src/lib/auth/require-org.ts         # optional guard helpers (orgs / sessions)
 src/lib/actions/organization.ts
 src/lib/audit/log.ts                  # Payload overrideAccess audit creates
 src/collections/**                   # Payload collection configs consumed by config
 src/migrations/index.ts               # prodMigrations list (edited by migrate:create output)
 src/payload-generated-schema.ts       # Drizzle schema (pnpm generate:db-schema)
 src/payload-types.ts                  # Payload generated types (pnpm generate:types)
+src/components/payload/Logo.tsx       # Payload admin branding (import map)
+src/components/payload/Icon.tsx
 src/app/(payload)/**                  # Payload API + admin app routes + import map
 src/app/api/auth/[...all]/route.ts
+src/app/(frontend)/(auth)/**          # product auth UI: /sign-in, /sign-up, /forgot-password, …
+src/app/(frontend)/admin/auth/**      # Payload external auth UI (see alignment below)
 ```
+
+### Alignment: admin vs product auth (Phase 2)
+
+Payload is configured with **`admin.routes`** (`login`, `createFirstUser`, `forgot`, `reset`, `logout`). Each value is relative to the admin area: Payload resolves them as **`/admin` + path**, e.g. `login: "/auth/sign-in"` → **`/admin/auth/sign-in`**. That is intentional (same pattern as Finn).
+
+| Area | App Router | Public URLs |
+|------|------------|-------------|
+| **Payload / CMS** | `src/app/(frontend)/admin/auth/*` | e.g. **`/admin/auth/sign-in`**, **`/admin/auth/sign-up`** |
+| **Product app** | `src/app/(frontend)/(auth)/*` | **`/sign-in`**, **`/sign-up`**, **`/forgot-password`**, **`/reset-password`**, **`/sign-out`** (no `/auth/` prefix) |
+
+Better Auth remains a **single** stack (`/api/auth/*`); both areas call the same **`authClient`** / **`auth`** instance.
+
+**First deployment:** with `emailAndPassword.requireEmailVerification: true`, the **first** user created via the admin sign-up flow is **auto-verified** and promoted to **`role: admin`** in **`hooks.after`** in `src/lib/auth.ts`, so they can sign in immediately without waiting for email. Subsequent users still follow normal verification rules.
 
 ## Verification (done criteria)
 
@@ -70,7 +88,7 @@ See [`.env.example`](../../.env.example):
 
 - `DATABASE_URL`, `PAYLOAD_SECRET`
 - `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (and **`NEXT_PUBLIC_APP_URL`** fallback in code)
-- Optional: S3/MinIO or R2 (Media); SMTP for real email (**omitting `SMTP_HOST`** uses console stubs in dev-friendly paths)
+- Optional: S3/MinIO or R2 (Media); SMTP for real email — Gmail example comments in `.env.example` (**omitting `SMTP_HOST`** uses console stubs in `sendTransactionalEmail`)
 
 ## Notes
 

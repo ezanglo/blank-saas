@@ -7,7 +7,7 @@ Companion references for building [nextjs-multitenant-starter-PRD-v4.md](../../n
 | Phase | Doc | Focus |
 |-------|-----|--------|
 | 1 | [phase-01-scaffold-and-design-system.md](phase-01-scaffold-and-design-system.md) | Layout, deps, shadcn, Tailwind, `next.config` |
-| 2 | [phase-02-database-payload-auth.md](phase-02-database-payload-auth.md) | Drizzle, Payload collections, better-auth, migrations, org mirror *(blank-saas doc: **complete**)* |
+| 2 | [phase-02-database-payload-auth.md](phase-02-database-payload-auth.md) | Drizzle, Payload collections, better-auth, migrations, org mirror + **admin/product auth URLs** *(doc aligned with repo)* |
 | 3 | [phase-03-middleware-email-query.md](phase-03-middleware-email-query.md) | Middleware, email, TanStack Query |
 | 4 | [phase-04-auth-and-marketing.md](phase-04-auth-and-marketing.md) | Auth pages, marketing, MDX, sitemap |
 | 5 | [phase-05-dashboard-orgs.md](phase-05-dashboard-orgs.md) | Dashboard shell, orgs, members, invitations |
