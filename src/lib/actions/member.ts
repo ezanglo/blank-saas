@@ -9,6 +9,8 @@ import { clientIpFromHeaders, userAgentFromHeaders } from "@/lib/audit/request-c
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
 import { ForbiddenError, getMemberRole } from "@/lib/auth/require-org";
 import { canManageMembers } from "@/lib/auth/rbac";
+import { MEMBER_INVITED } from "@/lib/analytics/events";
+import { captureServerEvent } from "@/lib/analytics/server";
 import { getOrgPlan } from "@/lib/org/plan";
 import { checkQuota } from "@/lib/quota/check";
 import { sendWebhookFireAndForget } from "@/lib/webhooks/send";
@@ -30,7 +32,9 @@ export async function inviteMemberAction(input: {
   if (!email) throw new Error("Email is required");
 
   const plan = await getOrgPlan(input.organizationId);
-  const memberQuota = await checkQuota(input.organizationId, plan, "membersPerOrg");
+  const memberQuota = await checkQuota(input.organizationId, plan, "membersPerOrg", {
+    distinctId: session.user.id,
+  });
   if (!memberQuota.allowed) {
     throw new Error("Member limit reached for this plan. Upgrade to add more people.");
   }
@@ -60,6 +64,13 @@ export async function inviteMemberAction(input: {
     metadata: { email, role: input.role },
     ipAddress: clientIpFromHeaders(h),
     userAgent: userAgentFromHeaders(h),
+  });
+
+  captureServerEvent({
+    distinctId: session.user.id,
+    event: MEMBER_INVITED,
+    properties: { orgId: input.organizationId, role: input.role },
+    groups: { company: input.organizationId },
   });
 
   return result;

@@ -58,7 +58,9 @@ export async function createOrgWebhookEndpointAction(input: {
   if (!url) throw new Error("URL is required");
 
   const plan = await getOrgPlan(input.organizationId);
-  const q = await checkQuota(input.organizationId, plan, "webhookEndpoints");
+  const q = await checkQuota(input.organizationId, plan, "webhookEndpoints", {
+    distinctId: session.user.id,
+  });
   if (!q.allowed) {
     throw new Error("Webhook endpoint limit reached for this plan.");
   }

@@ -57,7 +57,7 @@ export default function AdminSignInPage() {
             type="password"
             autoComplete="current-password"
             required
-            className={cn(inputClass)}
+            className={cn(inputClass, "ph-no-capture")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

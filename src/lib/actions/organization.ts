@@ -14,6 +14,8 @@ import {
   requireOrgRole,
 } from "@/lib/auth/require-org";
 import { canDeleteOrganization, canUpdateOrganization } from "@/lib/auth/rbac";
+import { ORG_CREATED, ORG_DELETED } from "@/lib/analytics/events";
+import { captureServerEvent } from "@/lib/analytics/server";
 import { db } from "@/lib/db";
 import { deleteSvixApplication, provisionSvixApplication } from "@/lib/webhooks/provision";
 import { sendWebhookFireAndForget } from "@/lib/webhooks/send";
@@ -70,6 +72,16 @@ export async function createOrganizationAction(input: {
     sendWebhookFireAndForget(orgId, "org.created", {
       orgId,
       name: org.name ?? name,
+    });
+    captureServerEvent({
+      distinctId: session.user.id,
+      event: ORG_CREATED,
+      properties: {
+        orgId,
+        orgName: org.name ?? name,
+        plan: "free",
+      },
+      groups: { company: orgId },
     });
   }
 
@@ -159,6 +171,13 @@ export async function deleteOrganizationAction(organizationId: string) {
   });
 
   void deleteSvixApplication(row?.svixAppId ?? null);
+
+  captureServerEvent({
+    distinctId: session.user.id,
+    event: ORG_DELETED,
+    properties: { orgId: organizationId },
+    groups: { company: organizationId },
+  });
 
   return auth.api.deleteOrganization({
     body: { organizationId },

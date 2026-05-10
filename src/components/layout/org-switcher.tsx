@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { setActiveOrganizationAction } from "@/lib/actions/organization";
+import { useAnalytics } from "@/hooks/use-analytics";
 import { activeOrganizationIdFromSession } from "@/lib/org/session-active-org";
 import { useOrganizations, useSessionQuery } from "@/lib/query/hooks";
 import { queryKeys } from "@/lib/query/keys";
@@ -26,6 +27,7 @@ export function OrgSwitcher() {
   const queryClient = useQueryClient();
   const { data: sessionRes, isLoading: sessionLoading } = useSessionQuery();
   const { data: orgs, isLoading: orgsLoading } = useOrganizations();
+  const { group } = useAnalytics();
   const [pending, setPending] = useState(false);
 
   const currentId = activeOrganizationIdFromSession(sessionRes);
@@ -34,12 +36,13 @@ export function OrgSwitcher() {
 
   const label = current?.name ?? (orgsLoading || sessionLoading ? "Loading…" : "Select workspace");
 
-  async function switchToOrg(orgId: string, slug: string) {
+  async function switchToOrg(orgId: string, slug: string, orgName: string) {
     setPending(true);
     try {
       if (!currentId || orgId !== currentId) {
         await setActiveOrganizationAction({ organizationId: orgId });
       }
+      group("company", orgId, { name: orgName });
       await queryClient.invalidateQueries({ queryKey: queryKeys.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.organizations.all });
       router.push(`/organizations/${slug}`);
@@ -70,7 +73,7 @@ export function OrgSwitcher() {
           <DropdownMenuItem
             key={org.id}
             className="cursor-pointer"
-            onClick={() => void switchToOrg(org.id, org.slug)}
+            onClick={() => void switchToOrg(org.id, org.slug, org.name)}
           >
             <span className="truncate">{org.name}</span>
             {org.id === currentId ? (

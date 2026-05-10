@@ -3,6 +3,8 @@ import type Stripe from "stripe";
 import { createElement } from "react";
 import { getPayload } from "payload";
 
+import { PLAN_DOWNGRADED, PLAN_UPGRADED } from "@/lib/analytics/events";
+import { captureServerEvent } from "@/lib/analytics/server";
 import { fireAndForgetAuditLog } from "@/lib/audit/log";
 import { findOrgIdByStripeCustomerId } from "@/lib/billing/find-org-by-stripe-customer";
 import { getOwnerEmailsForOrg } from "@/lib/billing/owner-emails";
@@ -54,6 +56,12 @@ const STRIPE_ACTOR = {
   actorEmail: null as string | null,
   actorName: "Stripe",
 };
+
+function subscriptionBillingInterval(sub: Stripe.Subscription): string | undefined {
+  const item = sub.items?.data?.[0];
+  const interval = item?.price && typeof item.price === "object" ? item.price.recurring?.interval : undefined;
+  return interval ?? undefined;
+}
 
 async function sendBillingAlerts(
   orgId: string,
@@ -125,6 +133,16 @@ export async function processStripeWebhookEvent(event: Stripe.Event): Promise<vo
           orgId,
           plan: patch.plan,
         });
+        captureServerEvent({
+          distinctId: orgId,
+          event: PLAN_UPGRADED,
+          properties: {
+            orgId,
+            plan: patch.plan,
+            interval: subscriptionBillingInterval(sub),
+          },
+          groups: { company: orgId },
+        });
       }
       break;
     }
@@ -176,6 +194,12 @@ export async function processStripeWebhookEvent(event: Stripe.Event): Promise<vo
         metadata: { stripeSubscriptionId: sub.id },
       });
       sendWebhookFireAndForget(orgId, "billing.subscription_cancelled", { orgId });
+      captureServerEvent({
+        distinctId: orgId,
+        event: PLAN_DOWNGRADED,
+        properties: { orgId },
+        groups: { company: orgId },
+      });
       await sendBillingAlerts(orgId, "subscription_cancelled");
       break;
     }

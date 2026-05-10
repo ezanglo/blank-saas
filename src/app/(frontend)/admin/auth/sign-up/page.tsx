@@ -103,7 +103,7 @@ export default function AdminSignUpPage() {
             autoComplete="new-password"
             required
             minLength={8}
-            className={cn(inputClass)}
+            className={cn(inputClass, "ph-no-capture")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

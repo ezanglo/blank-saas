@@ -225,6 +225,7 @@ export default function AccountPage() {
                           type="password"
                           autoComplete="current-password"
                           disabled={passwordSubmitting}
+                          className="ph-no-capture"
                           {...field}
                         />
                       </FormControl>
@@ -243,6 +244,7 @@ export default function AccountPage() {
                           type="password"
                           autoComplete="new-password"
                           disabled={passwordSubmitting}
+                          className="ph-no-capture"
                           {...field}
                         />
                       </FormControl>
@@ -261,6 +263,7 @@ export default function AccountPage() {
                           type="password"
                           autoComplete="new-password"
                           disabled={passwordSubmitting}
+                          className="ph-no-capture"
                           {...field}
                         />
                       </FormControl>

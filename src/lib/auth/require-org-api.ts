@@ -33,5 +33,5 @@ export async function requireOrgAdminSession(organizationId: string) {
   if (!role || !roleAtLeast(role, "admin")) {
     return { ok: false as const, response: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
   }
-  return { ok: true as const, session };
+  return { ok: true as const, session, role };
 }

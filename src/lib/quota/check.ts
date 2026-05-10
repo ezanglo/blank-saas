@@ -1,3 +1,5 @@
+import { QUOTA_EXCEEDED } from "@/lib/analytics/events";
+import { captureServerEvent } from "@/lib/analytics/server";
 import { createMonthlyQuotaLimiter, monthlyQuotaId } from "@/lib/quota/limiter";
 import { countOrgMembers } from "@/lib/quota/member-count";
 import type { PlanKey } from "@/lib/quota/plans";
@@ -7,10 +9,30 @@ import { countWebhookEndpointsForOrg } from "@/lib/webhooks/endpoint-count";
 
 export type QuotaResource = keyof (typeof PLANS)["free"];
 
+export type CheckQuotaOptions = {
+  /** Defaults to `orgId` when omitted (PRD §30.5). */
+  distinctId?: string;
+};
+
+function captureQuotaExceeded(
+  orgId: string,
+  resource: QuotaResource,
+  limit: number,
+  options?: CheckQuotaOptions,
+) {
+  captureServerEvent({
+    distinctId: options?.distinctId ?? orgId,
+    event: QUOTA_EXCEEDED,
+    properties: { orgId, resource, limit },
+    groups: { company: orgId },
+  });
+}
+
 export async function checkQuota(
   orgId: string,
   plan: PlanKey,
   resource: QuotaResource,
+  options?: CheckQuotaOptions,
 ): Promise<{ allowed: boolean; remaining: number; limit: number }> {
   const limit = PLANS[plan][resource];
   if (limit === Number.POSITIVE_INFINITY) {
@@ -29,7 +51,9 @@ export async function checkQuota(
     if (remaining / lim < 0.2) {
       void maybeSendQuotaWarningEmail(orgId, resource, remaining, lim);
     }
-    return { allowed: used < lim, remaining, limit: lim };
+    const allowed = used < lim;
+    if (!allowed) captureQuotaExceeded(orgId, resource, lim, options);
+    return { allowed, remaining, limit: lim };
   }
 
   if (resource === "webhookEndpoints") {
@@ -38,7 +62,9 @@ export async function checkQuota(
     if (remaining / lim < 0.2) {
       void maybeSendQuotaWarningEmail(orgId, resource, remaining, lim);
     }
-    return { allowed: used < lim, remaining, limit: lim };
+    const allowed = used < lim;
+    if (!allowed) captureQuotaExceeded(orgId, resource, lim, options);
+    return { allowed, remaining, limit: lim };
   }
 
   if (resource === "storageGb") {
@@ -47,7 +73,9 @@ export async function checkQuota(
     if (remaining / lim < 0.2) {
       void maybeSendQuotaWarningEmail(orgId, resource, remaining, lim);
     }
-    return { allowed: used < lim, remaining, limit: lim };
+    const allowed = used < lim;
+    if (!allowed) captureQuotaExceeded(orgId, resource, lim, options);
+    return { allowed, remaining, limit: lim };
   }
 
   const limiter = createMonthlyQuotaLimiter(orgId, resource, lim);
@@ -56,6 +84,7 @@ export async function checkQuota(
   if (result.remaining / lim < 0.2) {
     void maybeSendQuotaWarningEmail(orgId, resource, result.remaining, lim);
   }
+  if (!result.success) captureQuotaExceeded(orgId, resource, lim, options);
   return {
     allowed: result.success,
     remaining: result.remaining,
@@ -68,6 +97,7 @@ export async function consumeMonthlyQuota(
   orgId: string,
   plan: PlanKey,
   resource: QuotaResource,
+  options?: CheckQuotaOptions,
 ): Promise<{ allowed: boolean; remaining: number; limit: number }> {
-  return checkQuota(orgId, plan, resource);
+  return checkQuota(orgId, plan, resource, options);
 }

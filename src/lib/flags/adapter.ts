@@ -3,6 +3,8 @@ import { flag } from "flags/next";
 import { headers } from "next/headers";
 import { getPayload } from "payload";
 
+import { FEATURE_FLAG_EVALUATED } from "@/lib/analytics/events";
+import { captureServerEvent } from "@/lib/analytics/server";
 import { auth } from "@/lib/auth";
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
 import { activeOrganizationIdFromSession } from "@/lib/org/session-active-org";
@@ -56,29 +58,53 @@ export function createPayloadBackedFlag(flagKey: string) {
           }
         | undefined;
 
-      if (!record || !record.enabled) return false;
-
-      const env = record.environments ?? "all";
-      if (!currentDeploymentMatches(env)) return false;
-
       const orgId = entities?.org?.id;
       const userId = entities?.user?.id;
-      const allowlist = record.allowlist as string[] | null | undefined;
-      if (Array.isArray(allowlist)) {
-        if (orgId && allowlist.includes(orgId)) return true;
-        if (userId && allowlist.includes(userId)) return true;
+
+      let decided = false;
+
+      if (!record || !record.enabled) {
+        decided = false;
+      } else {
+        const env = record.environments ?? "all";
+        if (!currentDeploymentMatches(env)) {
+          decided = false;
+        } else {
+          const allowlist = record.allowlist as string[] | null | undefined;
+          const allowlisted =
+            Array.isArray(allowlist) &&
+            ((orgId != null && allowlist.includes(orgId)) ||
+              (userId != null && allowlist.includes(userId)));
+
+          if (allowlisted) {
+            decided = true;
+          } else {
+            const pct = record.rolloutPercentage ?? 0;
+            if (pct >= 100) decided = true;
+            else if (pct <= 0) decided = false;
+            else {
+              const hash = orgId
+                ? [...orgId].reduce((a, c) => a + c.charCodeAt(0), 0)
+                : userId
+                  ? [...userId].reduce((a, c) => a + c.charCodeAt(0), 0)
+                  : 0;
+              decided = hash % 100 < pct;
+            }
+          }
+        }
       }
 
-      const pct = record.rolloutPercentage ?? 0;
-      if (pct >= 100) return true;
-      if (pct <= 0) return false;
+      const distinctId = userId ?? orgId;
+      if (distinctId) {
+        captureServerEvent({
+          distinctId,
+          event: FEATURE_FLAG_EVALUATED,
+          properties: { flagKey, result: decided, orgId: orgId ?? undefined },
+          groups: orgId ? { company: orgId } : undefined,
+        });
+      }
 
-      const hash = orgId
-        ? [...orgId].reduce((a, c) => a + c.charCodeAt(0), 0)
-        : userId
-          ? [...userId].reduce((a, c) => a + c.charCodeAt(0), 0)
-          : 0;
-      return hash % 100 < pct;
+      return decided;
     },
   });
 }

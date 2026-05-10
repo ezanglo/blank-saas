@@ -19,7 +19,9 @@ export async function GET(
   if (!gate.ok) return gate.response;
 
   const plan = await getOrgPlan(orgId);
-  const apiQuota = await consumeMonthlyQuota(orgId, plan, "apiCallsPerMonth");
+  const apiQuota = await consumeMonthlyQuota(orgId, plan, "apiCallsPerMonth", {
+    distinctId: gate.session.user.id,
+  });
   if (!apiQuota.allowed) {
     return NextResponse.json(
       { error: "quota_exceeded", resource: "apiCallsPerMonth" },
