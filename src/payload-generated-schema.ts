@@ -558,6 +558,33 @@ export const permissions = pgTable(
   ],
 );
 
+export const stripe_processed_events = pgTable(
+  "stripe_processed_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    eventId: varchar("event_id").notNull(),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    uniqueIndex("stripe_processed_events_event_id_idx").on(columns.eventId),
+    index("stripe_processed_events_updated_at_idx").on(columns.updatedAt),
+    index("stripe_processed_events_created_at_idx").on(columns.createdAt),
+  ],
+);
+
 export const payload_kv = pgTable(
   "payload_kv",
   {
@@ -614,6 +641,7 @@ export const payload_locked_documents_rels = pgTable(
     "audit-logsID": uuid("audit_logs_id"),
     "feature-flagsID": uuid("feature_flags_id"),
     permissionsID: uuid("permissions_id"),
+    "stripe-processed-eventsID": uuid("stripe_processed_events_id"),
   },
   (columns) => [
     index("payload_locked_documents_rels_order_idx").on(columns.order),
@@ -648,6 +676,9 @@ export const payload_locked_documents_rels = pgTable(
     ),
     index("payload_locked_documents_rels_permissions_id_idx").on(
       columns.permissionsID,
+    ),
+    index("payload_locked_documents_rels_stripe_processed_events_id_idx").on(
+      columns["stripe-processed-eventsID"],
     ),
     foreignKey({
       columns: [columns["parent"]],
@@ -713,6 +744,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["permissionsID"]],
       foreignColumns: [permissions.id],
       name: "payload_locked_documents_rels_permissions_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["stripe-processed-eventsID"]],
+      foreignColumns: [stripe_processed_events.id],
+      name: "payload_locked_documents_rels_stripe_processed_events_fk",
     }).onDelete("cascade"),
   ],
 );
@@ -877,6 +913,10 @@ export const relations_permissions = relations(permissions, ({ one }) => ({
     relationName: "organization",
   }),
 }));
+export const relations_stripe_processed_events = relations(
+  stripe_processed_events,
+  () => ({}),
+);
 export const relations_payload_kv = relations(payload_kv, () => ({}));
 export const relations_payload_locked_documents_rels = relations(
   payload_locked_documents_rels,
@@ -946,6 +986,11 @@ export const relations_payload_locked_documents_rels = relations(
       references: [permissions.id],
       relationName: "permissions",
     }),
+    "stripe-processed-eventsID": one(stripe_processed_events, {
+      fields: [payload_locked_documents_rels["stripe-processed-eventsID"]],
+      references: [stripe_processed_events.id],
+      relationName: "stripe-processed-events",
+    }),
   }),
 );
 export const relations_payload_locked_documents = relations(
@@ -1002,6 +1047,7 @@ type DatabaseSchema = {
   audit_logs: typeof audit_logs;
   feature_flags: typeof feature_flags;
   permissions: typeof permissions;
+  stripe_processed_events: typeof stripe_processed_events;
   payload_kv: typeof payload_kv;
   payload_locked_documents: typeof payload_locked_documents;
   payload_locked_documents_rels: typeof payload_locked_documents_rels;
@@ -1020,6 +1066,7 @@ type DatabaseSchema = {
   relations_audit_logs: typeof relations_audit_logs;
   relations_feature_flags: typeof relations_feature_flags;
   relations_permissions: typeof relations_permissions;
+  relations_stripe_processed_events: typeof relations_stripe_processed_events;
   relations_payload_kv: typeof relations_payload_kv;
   relations_payload_locked_documents_rels: typeof relations_payload_locked_documents_rels;
   relations_payload_locked_documents: typeof relations_payload_locked_documents;

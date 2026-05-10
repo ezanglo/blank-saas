@@ -49,4 +49,9 @@ describe("sessionActiveOrg", () => {
   it("returns null when unset", () => {
     expect(sessionActiveOrg({ session: {} })).toBeNull();
   });
+
+  it("returns null when session payload missing", () => {
+    expect(sessionActiveOrg({ session: null })).toBeNull();
+    expect(sessionActiveOrg({ session: undefined })).toBeNull();
+  });
 });

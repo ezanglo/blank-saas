@@ -38,7 +38,7 @@ function mergeResponseHeaders(res: NextResponse, extra: Headers | undefined) {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/")) {
+  if (pathname.startsWith("/api/") && !pathname.startsWith("/api/webhooks/stripe")) {
     const ip = clientIp(request);
     const { success, pending } = await apiRateLimiter.limit(ip);
     if (pending) await pending;

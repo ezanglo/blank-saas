@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { MotionSection } from "@/components/marketing/motion-section";
+import type { MarketingPriceDisplays } from "@/lib/billing/marketing-prices";
 import { PLANS } from "@/lib/quota/plans";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,23 +25,19 @@ const tiers = [
     key: "free" as const,
     name: "Free",
     description: "Try the stack and validate your flow.",
-    monthly: 0,
-    annual: 0,
+    highlighted: false,
   },
   {
     key: "pro" as const,
     name: "Pro",
     description: "For growing teams that need higher limits.",
-    monthly: 29,
-    annual: 290,
     highlighted: true,
   },
   {
     key: "enterprise" as const,
     name: "Enterprise",
     description: "Custom limits and support when you need it.",
-    monthly: null,
-    annual: null,
+    highlighted: false,
   },
 ];
 
@@ -49,7 +46,7 @@ function formatLimit(n: number) {
   return n.toLocaleString();
 }
 
-export function HomePricingPreview() {
+export function HomePricingPreview({ prices }: { prices: MarketingPriceDisplays }) {
   const [annual, setAnnual] = useState(false);
 
   return (
@@ -58,8 +55,8 @@ export function HomePricingPreview() {
         <div className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-3xl font-semibold tracking-tight">Pricing</h2>
           <p className="max-w-xl text-muted-foreground">
-            Display-only preview—billing connects in a later phase. Numbers
-            reflect quota configuration in code.
+            Dollar amounts match your Stripe catalog when billing env is configured; limits follow{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">PLANS</code> in code.
           </p>
           <div className="flex items-center gap-2 pt-2">
             <Label htmlFor="billing-toggle" className="text-sm text-muted-foreground">
@@ -78,11 +75,13 @@ export function HomePricingPreview() {
           {tiers.map((tier) => {
             const limits = PLANS[tier.key];
             const price =
-              tier.monthly === null
-                ? "Custom"
-                : annual
-                  ? `$${tier.annual}/yr`
-                  : `$${tier.monthly}/mo`;
+              tier.key === "free"
+                ? "$0"
+                : tier.key === "enterprise"
+                  ? prices.enterpriseMonthly
+                  : annual
+                    ? prices.proYearly
+                    : prices.proMonthly;
 
             return (
               <Card

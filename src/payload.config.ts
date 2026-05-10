@@ -19,6 +19,7 @@ import { Verifications } from "@/collections/auth/Verifications";
 import { FeatureFlags } from "@/collections/FeatureFlags";
 import { Media } from "@/collections/Media";
 import { Permissions } from "@/collections/Permissions";
+import { StripeProcessedEvents } from "@/collections/StripeProcessedEvents";
 import { migrations } from "@/migrations";
 
 const filename = fileURLToPath(import.meta.url);
@@ -63,6 +64,7 @@ export default buildConfig({
     AuditLogs,
     FeatureFlags,
     Permissions,
+    StripeProcessedEvents,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET ?? "",

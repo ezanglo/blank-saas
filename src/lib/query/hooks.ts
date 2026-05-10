@@ -143,12 +143,22 @@ export function useOrgUsage(orgId: string | undefined) {
   });
 }
 
-/** Wire to Payload billing fields in Phase 7+. */
+/** Subscription summary from org + Stripe (when configured). */
 export function useOrgBilling(orgId: string | undefined) {
   return useQuery({
     queryKey: orgId ? queryKeys.billing.detail(orgId) : ["billing", "none"],
-    queryFn: () => Promise.resolve(null),
-    enabled: false,
+    queryFn: async () => {
+      const res = await fetch(`/api/orgs/${orgId}/billing`);
+      if (!res.ok) throw new Error("Failed to load billing");
+      return res.json() as Promise<{
+        plan: string;
+        stripeSubscriptionStatus: string | null;
+        stripePriceId: string | null;
+        currentPeriodEnd: number | null;
+      }>;
+    },
+    enabled: Boolean(orgId),
+    refetchInterval: 60_000,
   });
 }
 

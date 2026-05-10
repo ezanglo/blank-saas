@@ -25,6 +25,7 @@ export function SettingsNav({
   ];
 
   if (isAdmin) {
+    items.push({ href: `${base}/billing`, label: "Billing" });
     items.push({ href: `${base}/audit-logs`, label: "Audit logs" });
   }
   if (isAdmin && showWebhooks) {

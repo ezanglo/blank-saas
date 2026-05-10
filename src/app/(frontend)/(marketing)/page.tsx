@@ -8,6 +8,7 @@ import { HomeHowItWorks } from "@/components/marketing/sections/home-how-it-work
 import { HomeLogoBar } from "@/components/marketing/sections/home-logo-bar";
 import { HomePricingPreview } from "@/components/marketing/sections/home-pricing-preview";
 import { HomeTestimonials } from "@/components/marketing/sections/home-testimonials";
+import { getMarketingPriceDisplays } from "@/lib/billing/marketing-prices";
 
 export const metadata: Metadata = {
   title: "Blank SaaS — Multi-tenant starter",
@@ -20,14 +21,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function MarketingHomePage() {
+export default async function MarketingHomePage() {
+  const prices = await getMarketingPriceDisplays();
   return (
     <main>
       <HomeHero />
       <HomeLogoBar />
       <HomeFeatures />
       <HomeHowItWorks />
-      <HomePricingPreview />
+      <HomePricingPreview prices={prices} />
       <HomeTestimonials />
       <HomeFaq />
       <HomeCta />

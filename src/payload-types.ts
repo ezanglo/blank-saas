@@ -79,6 +79,7 @@ export interface Config {
     'audit-logs': AuditLog;
     'feature-flags': FeatureFlag;
     permissions: Permission;
+    'stripe-processed-events': StripeProcessedEvent;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -98,6 +99,7 @@ export interface Config {
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'feature-flags': FeatureFlagsSelect<false> | FeatureFlagsSelect<true>;
     permissions: PermissionsSelect<false> | PermissionsSelect<true>;
+    'stripe-processed-events': StripeProcessedEventsSelect<false> | StripeProcessedEventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -381,6 +383,16 @@ export interface Permission {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stripe-processed-events".
+ */
+export interface StripeProcessedEvent {
+  id: string;
+  eventId: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -450,6 +462,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'permissions';
         value: string | Permission;
+      } | null)
+    | ({
+        relationTo: 'stripe-processed-events';
+        value: string | StripeProcessedEvent;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -698,6 +714,15 @@ export interface PermissionsSelect<T extends boolean = true> {
   actions?: T;
   grantedBy?: T;
   expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stripe-processed-events_select".
+ */
+export interface StripeProcessedEventsSelect<T extends boolean = true> {
+  eventId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

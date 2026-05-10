@@ -27,3 +27,23 @@ export async function getOrganizationById(id: string) {
     .limit(1);
   return row ?? null;
 }
+
+const orgBillingSelect = {
+  id: schema.organizations.id,
+  name: schema.organizations.name,
+  slug: schema.organizations.slug,
+  plan: schema.organizations.plan,
+  stripeCustomerId: schema.organizations.stripeCustomerId,
+  stripeSubscriptionId: schema.organizations.stripeSubscriptionId,
+  stripeSubscriptionStatus: schema.organizations.stripeSubscriptionStatus,
+  stripePriceId: schema.organizations.stripePriceId,
+} as const;
+
+export async function getOrganizationBillingById(id: string) {
+  const [row] = await db
+    .select(orgBillingSelect)
+    .from(schema.organizations)
+    .where(eq(schema.organizations.id, id))
+    .limit(1);
+  return row ?? null;
+}

@@ -23,6 +23,7 @@ const samples: Partial<Record<AuditAction, unknown>> = {
   "billing.checkout_started": { priceId: "price_1" },
   "billing.subscription_activated": { plan: "pro", stripeSubscriptionId: "sub_1" },
   "billing.subscription_cancelled": { stripeSubscriptionId: "sub_1" },
+  "billing.subscription_resumed": { stripeSubscriptionId: "sub_1" },
   "billing.plan_changed": { from: "free", to: "pro" },
   "permission.granted": {
     subjectId: "s1",
@@ -60,6 +61,7 @@ describe("AuditEvents", () => {
         "billing.plan_changed",
         "billing.subscription_activated",
         "billing.subscription_cancelled",
+        "billing.subscription_resumed",
         "flag.toggled",
         "invitation.accepted",
         "invitation.cancelled",

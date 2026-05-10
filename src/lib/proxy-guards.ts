@@ -19,11 +19,14 @@ export function parseOrganizationSlugSegment(pathname: string): string | null {
 }
 
 export function sessionActiveOrg(session: {
-  session: Record<string, unknown>;
+  session: Record<string, unknown> | null | undefined;
 }): string | null {
-  const s = session.session as {
-    activeOrganizationId?: string | null;
-    activeOrganization?: string | null;
-  };
-  return s.activeOrganizationId ?? s.activeOrganization ?? null;
+  const s = session.session as
+    | {
+        activeOrganizationId?: string | null;
+        activeOrganization?: string | null;
+      }
+    | null
+    | undefined;
+  return s?.activeOrganizationId ?? s?.activeOrganization ?? null;
 }

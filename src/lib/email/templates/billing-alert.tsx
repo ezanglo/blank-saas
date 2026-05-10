@@ -1,13 +1,45 @@
-import { Body, Container, Head, Heading, Html, Text } from "@react-email/components";
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Text,
+} from "@react-email/components";
 
-/** Stub for Stripe billing webhooks (Phase 7). Props will align with invoice/payment events. */
+export type BillingAlertKind = "payment_failed" | "subscription_cancelled" | "trial_ending";
+
 export type BillingAlertEmailProps = {
   orgName: string;
-  headline: string;
-  detail?: string;
+  event: BillingAlertKind;
+  daysRemaining?: number;
+  portalUrl: string;
 };
 
-export default function BillingAlertEmail({ orgName, headline, detail }: BillingAlertEmailProps) {
+const titles: Record<BillingAlertKind, string> = {
+  payment_failed: "Payment failed for your subscription",
+  subscription_cancelled: "Your subscription has ended",
+  trial_ending: "Your trial is ending soon",
+};
+
+export default function BillingAlertEmail({
+  orgName,
+  event,
+  daysRemaining,
+  portalUrl,
+}: BillingAlertEmailProps) {
+  const headline = titles[event];
+  let detail: string | undefined;
+  if (event === "trial_ending" && daysRemaining !== undefined) {
+    detail = `Your trial ends in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}.`;
+  } else if (event === "payment_failed") {
+    detail =
+      "We could not charge your default payment method. Update billing details to avoid losing access.";
+  } else if (event === "subscription_cancelled") {
+    detail = "Your workspace has been moved to the free plan. You can resubscribe anytime.";
+  }
+
   return (
     <Html>
       <Head />
@@ -18,6 +50,21 @@ export default function BillingAlertEmail({ orgName, headline, detail }: Billing
           {detail ? (
             <Text style={{ fontSize: "14px", lineHeight: "1.5", color: "#444" }}>{detail}</Text>
           ) : null}
+          <Button
+            href={portalUrl}
+            style={{
+              display: "inline-block",
+              marginTop: "16px",
+              padding: "12px 20px",
+              backgroundColor: "#111",
+              color: "#fff",
+              borderRadius: "6px",
+              textDecoration: "none",
+              fontSize: "14px",
+            }}
+          >
+            Manage billing
+          </Button>
         </Container>
       </Body>
     </Html>

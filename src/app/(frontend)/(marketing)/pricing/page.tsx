@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { MotionSection } from "@/components/marketing/motion-section";
+import { getMarketingPriceDisplays } from "@/lib/billing/marketing-prices";
 import { PLANS } from "@/lib/quota/plans";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,12 +40,6 @@ function fmt(n: number) {
   return n.toLocaleString();
 }
 
-const tiers = [
-  { key: "free" as const, name: "Free", price: "$0", description: "Explore and prototype.", highlight: false },
-  { key: "pro" as const, name: "Pro", price: "$29/mo", description: "For production workloads.", highlight: true },
-  { key: "enterprise" as const, name: "Enterprise", price: "Custom", description: "Talk to us for scale.", highlight: false },
-];
-
 const rows: { label: string; keys: (keyof typeof PLANS)[] }[] = [
   { label: "API calls / month", keys: ["free", "pro", "enterprise"] },
   { label: "Members / org", keys: ["free", "pro", "enterprise"] },
@@ -60,16 +55,42 @@ function cellValue(rowLabel: string, plan: keyof typeof PLANS) {
   return fmt(p.webhookEndpoints);
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const stripePrices = await getMarketingPriceDisplays();
+  const tiers = [
+    {
+      key: "free" as const,
+      name: "Free",
+      price: "$0",
+      priceNote: null as string | null,
+      description: "Explore and prototype.",
+      highlight: false,
+    },
+    {
+      key: "pro" as const,
+      name: "Pro",
+      price: stripePrices.proMonthly,
+      priceNote: `or ${stripePrices.proYearly}`,
+      description: "For production workloads.",
+      highlight: true,
+    },
+    {
+      key: "enterprise" as const,
+      name: "Enterprise",
+      price: stripePrices.enterpriseMonthly,
+      priceNote: null as string | null,
+      description: "Talk to us for scale.",
+      highlight: false,
+    },
+  ];
+
   return (
     <main className="px-6 py-12 md:py-16">
       <div className="mx-auto max-w-6xl">
         <h1 className="text-4xl font-semibold tracking-tight">Pricing</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Marketing-only preview—Stripe checkout and subscription state ship in
-          the billing phase. Limits mirror{" "}
-          <code className="rounded bg-muted px-1 py-0.5 text-xs">PLANS</code> in
-          code.
+          Paid tiers use the same Stripe Price objects as checkout. Limits mirror{" "}
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">PLANS</code> in code.
         </p>
 
         <MotionSection className="mt-12">
@@ -89,6 +110,9 @@ export default function PricingPage() {
                   </div>
                   <CardDescription>{t.description}</CardDescription>
                   <p className="pt-2 text-2xl font-semibold">{t.price}</p>
+                  {t.priceNote ? (
+                    <p className="text-muted-foreground text-sm font-medium">{t.priceNote}</p>
+                  ) : null}
                 </CardHeader>
                 <CardContent className="flex-1 space-y-2 text-sm text-muted-foreground">
                   <p>API / mo: {fmt(PLANS[t.key].apiCallsPerMonth)}</p>

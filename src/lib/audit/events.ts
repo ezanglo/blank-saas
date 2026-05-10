@@ -30,6 +30,7 @@ export const AuditEvents = {
     stripeSubscriptionId: z.string(),
   }),
   "billing.subscription_cancelled": z.object({ stripeSubscriptionId: z.string() }),
+  "billing.subscription_resumed": z.object({ stripeSubscriptionId: z.string() }),
   "billing.plan_changed": z.object({ from: z.string(), to: z.string() }),
   "permission.granted": z.object({
     subjectId: z.string(),
