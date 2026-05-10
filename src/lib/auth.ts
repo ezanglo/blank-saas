@@ -7,6 +7,10 @@ import { count, isNull } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { sendTransactionalEmail } from "@/lib/email";
+import InviteMemberEmail from "@/lib/email/templates/invite-member";
+import MagicLinkEmail from "@/lib/email/templates/magic-link";
+import ResetPasswordEmail from "@/lib/email/templates/reset-password";
+import VerifyEmail from "@/lib/email/templates/verify-email";
 import * as schema from "@/payload-generated-schema";
 
 const baseURL = (
@@ -84,6 +88,10 @@ export const auth = betterAuth({
       await sendTransactionalEmail({
         to: user.email,
         subject: "Reset your password",
+        react: ResetPasswordEmail({
+          name: user.name?.trim() || user.email,
+          resetUrl: url,
+        }),
         text: `Reset link: ${url}`,
       });
     },
@@ -100,6 +108,7 @@ export const auth = betterAuth({
       await sendTransactionalEmail({
         to: user.email,
         subject: "Verify your email",
+        react: VerifyEmail({ verifyUrl: url }),
         text: `Verify: ${url}`,
       });
     },
@@ -175,6 +184,7 @@ export const auth = betterAuth({
         await sendTransactionalEmail({
           to: email,
           subject: "Your sign-in link",
+          react: MagicLinkEmail({ signInUrl: url }),
           text: `Sign in: ${url}`,
         });
       },
@@ -228,10 +238,28 @@ export const auth = betterAuth({
         }
         const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
         const inviteLink = `${appUrl}/invite/${data.id}`;
+        const inviterName =
+          data.inviter?.user?.name?.trim() ||
+          data.inviter?.user?.email?.trim() ||
+          "A teammate";
+        const expiresAt = (data.invitation as { expiresAt?: Date | string })?.expiresAt;
+        const expiresInHours = expiresAt
+          ? Math.max(
+              1,
+              Math.round(
+                (new Date(expiresAt).getTime() - Date.now()) / 3_600_000,
+              ),
+            )
+          : 72;
         await sendTransactionalEmail({
           to: data.email,
           subject: `Invitation to ${data.organization.name}`,
-          html: `<p>You were invited to <strong>${data.organization.name}</strong>.</p><p><a href="${inviteLink}">Accept invitation</a></p>`,
+          react: InviteMemberEmail({
+            inviterName,
+            orgName: data.organization.name,
+            inviteUrl: inviteLink,
+            expiresInHours,
+          }),
           text: `Join ${data.organization.name}: ${inviteLink}`,
         });
       },

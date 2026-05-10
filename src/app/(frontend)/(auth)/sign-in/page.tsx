@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, Suspense, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 const inputClass =
   "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 
-export default function AuthSignInPage() {
+function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -29,7 +29,10 @@ export default function AuthSignInPage() {
       return;
     }
     toast.success("Signed in");
-    const redirect = searchParams.get("redirect") ?? "/";
+    const redirect =
+      searchParams.get("callbackUrl") ??
+      searchParams.get("redirect") ??
+      "/";
     router.push(redirect);
     router.refresh();
   }
@@ -81,5 +84,13 @@ export default function AuthSignInPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function AuthSignInPage() {
+  return (
+    <Suspense fallback={<div className="text-sm text-muted-foreground">Loading…</div>}>
+      <SignInForm />
+    </Suspense>
   );
 }
