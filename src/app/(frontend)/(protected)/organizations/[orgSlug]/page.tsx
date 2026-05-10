@@ -1,11 +1,7 @@
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
+import data from "@/data/dashboard-sample.json";
 import { getOrganizationBySlug } from "@/lib/org/load-org";
 import { notFound } from "next/navigation";
 
@@ -25,25 +21,16 @@ export default async function OrganizationOverviewPage({ params }: Props) {
   if (!org) notFound();
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-xl">{org.name}</CardTitle>
-          <CardDescription>Workspace slug and billing plan (Stripe in a later phase).</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm">
-          <div className="flex flex-wrap gap-3">
-            <span className="text-muted-foreground">Slug:</span>
-            <code className="rounded-md bg-muted px-2 py-0.5 text-xs">{org.slug}</code>
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <SectionCards />
+          <div className="px-4 lg:px-6">
+            <ChartAreaInteractive />
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-muted-foreground">Plan:</span>
-            <Badge variant="secondary" className="capitalize">
-              {org.plan}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+          <DataTable data={data} />
+        </div>
+      </div>
     </div>
   );
 }
