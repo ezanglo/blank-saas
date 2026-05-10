@@ -10,7 +10,7 @@ Public and pre-dashboard experience: authentication forms and full marketing sur
 
 | PRD section | Topic |
 |-------------|--------|
-| [§3 Routes](../../nextjs-multitenant-starter-PRD-v4.md) | `(auth)` + `(marketing)` |
+| [§3 Routes](../../nextjs-multitenant-starter-PRD-v4.md) | `(frontend)/(auth)` + `(frontend)/(marketing)` |
 | [§19 Forms pattern](../../nextjs-multitenant-starter-PRD-v4.md) | RHF + Zod + shadcn Form |
 | [§21 Marketing pages](../../nextjs-multitenant-starter-PRD-v4.md) | Sections, MDX, legal |
 | [§12 MDX frontmatter](../../nextjs-multitenant-starter-PRD-v4.md) | Blog + changelog |
@@ -23,7 +23,7 @@ Public and pre-dashboard experience: authentication forms and full marketing sur
 ## Deliverables (checklist)
 
 - [ ] Auth pages: `login`, `register`, `forgot-password`, `reset-password` + components under `src/components/auth/`.
-- [ ] `(marketing)/layout.tsx` — nav + footer (PRD §21.2).
+- [ ] `(frontend)/(marketing)/layout.tsx` — nav + footer (PRD §21.2).
 - [ ] Homepage sections + `framer-motion` (PRD §21.3); Features, Pricing (marketing), Blog index + `[slug]`, Changelog, Legal.
 - [ ] Content: `/content/blog/*.mdx`, `/content/changelog/*.mdx` — seed posts per PRD.
 - [ ] `next-mdx-remote` rendering with MDX component overrides (PRD §21.6).
@@ -33,7 +33,7 @@ Public and pre-dashboard experience: authentication forms and full marketing sur
 
 ```
 src/app/(auth)/login/page.tsx
-src/app/(marketing)/page.tsx
+src/app/(frontend)/(marketing)/page.tsx
 src/components/marketing/
 content/blog/
 content/changelog/

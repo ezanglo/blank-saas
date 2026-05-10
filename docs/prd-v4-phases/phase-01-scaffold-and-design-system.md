@@ -23,7 +23,7 @@ Establish the repository shape, UI foundation, and build tooling so later phases
 
 ## Deliverables (checklist)
 
-- [ ] `src/app/` skeleton: route groups `(marketing)`, `(auth)`, `(dashboard)` placeholder layouts; `api/` folder ready.
+- [ ] `src/app/` skeleton: **`(frontend)/`** wraps `(marketing)`, `(auth)`, `(dashboard)` (`(frontend)/layout.tsx` owns the product `<html>`); **`(payload)/`** sibling for Payload admin (own document via `@payloadcms/next`); **`api/`** routes at `src/app/api/`.
 - [ ] Dependencies: framework stack from PRD §2 as needed for Phase 1 (Zod, RHF, TanStack Query can be installed here or when forms land).
 - [ ] **shadcn/ui** init — **new-york** style; `src/components/ui/`.
 - [ ] **Tailwind v4** + CSS variables; **Inter** via `next/font/google` in root layout.
@@ -34,9 +34,12 @@ Establish the repository shape, UI foundation, and build tooling so later phases
 ## Key paths (expected)
 
 ```
-src/app/(marketing)/
-src/app/(auth)/
-src/app/(dashboard)/
+src/app/layout.tsx               # mandatory Next root — pass‑through document (Payload + frontend each own `<html>`)
+src/app/(frontend)/layout.tsx
+src/app/(frontend)/(marketing)/
+src/app/(frontend)/(auth)/
+src/app/(frontend)/(dashboard)/
+src/app/(payload)/
 src/app/api/
 src/components/ui/
 ```

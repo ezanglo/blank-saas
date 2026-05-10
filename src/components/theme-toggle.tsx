@@ -16,8 +16,15 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="icon-sm" disabled aria-label="Toggle theme">
-        <Moon aria-hidden className="size-4 opacity-0" />
+      <Button
+        variant="outline"
+        size="icon-sm"
+        disabled
+        aria-label="Toggle theme"
+        suppressHydrationWarning
+        className="size-9 shrink-0"
+      >
+        <span className="block size-4 shrink-0" aria-hidden />
       </Button>
     );
   }

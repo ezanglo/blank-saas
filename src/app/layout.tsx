@@ -1,28 +1,17 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from "@/components/providers";
+import type { ReactNode } from "react";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "Blank SaaS",
-  description: "Multi-tenant SaaS starter scaffold",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
-      </body>
-    </html>
-  );
+/**
+ * Next.js **requires** a root `src/app/layout.tsx` for the App Router (see Layouts → root layout
+ * in the Next.js docs). Payload’s embedded admin **`RootLayout`** also renders a **full HTML
+ * document**. If this file wrapped `{children}` in `<html><body>`, `/admin` would end up as
+ * nested documents and React would hydrate incorrectly.
+ *
+ * So this root is intentionally a transparent wrapper: **`(frontend)`** and **`(payload)`** are
+ * sibling segments, each owning its own document layout. That’s the standard pattern when
+ * co-locating Payload admin with a Next theme shell.
+ *
+ * “Better” escapes are mostly heavier (separate Payload/Next deployments, subdomain rewrites).
+ */
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  return children;
 }

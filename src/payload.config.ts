@@ -34,7 +34,20 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     importMap: {
-      baseDir: path.resolve(dirname, ".."),
+      baseDir: path.resolve(dirname),
+    },
+    components: {
+      graphics: {
+        Logo: "/components/payload/Logo#Logo",
+        Icon: "/components/payload/Icon#Icon",
+      },
+    },
+    routes: {
+      login: "/auth/sign-in",
+      createFirstUser: "/auth/sign-up",
+      forgot: "/auth/forgot-password",
+      reset: "/auth/reset-password",
+      logout: "/auth/sign-out",
     },
   },
   collections: [

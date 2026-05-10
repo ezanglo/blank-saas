@@ -1,3 +1,4 @@
+import { auth } from '@/lib/auth';
 import type { CollectionConfig } from "payload";
 
 export const Users: CollectionConfig = {
@@ -10,7 +11,6 @@ export const Users: CollectionConfig = {
         name: "better-auth",
         authenticate: async ({ headers, payload }) => {
           try {
-            const { auth } = await import("@/lib/auth");
             const userSession = await auth.api.getSession({ headers });
 
             if (!userSession?.user) return { user: null };
@@ -39,7 +39,6 @@ export const Users: CollectionConfig = {
       path: "/logout",
       method: "post",
       handler: async (req) => {
-        const { auth } = await import("@/lib/auth");
         await auth.api.signOut({ headers: req.headers });
         return Response.json(
           { message: "Token revoked successfully" },
