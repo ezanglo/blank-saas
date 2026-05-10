@@ -33,13 +33,13 @@ Public and pre-dashboard experience: authentication forms and full marketing sur
 
 Conventions: [phase-11](phase-11-docker-tests-readme.md).
 
-- **Unit** — Zod schemas for auth forms (`sign-in`, `sign-up`, reset); helpers parsing MDX/frontmatter §12.
-- **Integration** — marketing routes return **200** and critical metadata where asserted; optional Playwright smoke deferred to Phase 11 E2E.
+- **Unit** — Zod schemas for auth forms (`sign-in`, `sign-up`, `reset`); helpers parsing MDX/frontmatter §12.
+- **Marketing routes (smoke)** — **E2E only** (no Vitest `fetch`/integration suite): Playwright [`tests/e2e/marketing.spec.ts`](../../tests/e2e/marketing.spec.ts) covers homepage, pricing, blog index + post, changelog, and legal pages without auth (PRD §23.2). CI runs this via `pnpm test:e2e` ([phase-11](phase-11-docker-tests-readme.md)).
 
 Checklist:
 
 - [x] Unit: validation schemas match PRD §19 (password rules, email shape); MDX/frontmatter helpers — `src/lib/auth/schemas.test.ts`, `src/lib/mdx/schemas.test.ts`, `src/lib/mdx/format.test.ts`.
-- [x] E2E smoke: homepage + blog + pricing + changelog + legal — [`tests/e2e/marketing.spec.ts`](../../tests/e2e/marketing.spec.ts) (PRD §23.2).
+- [x] **E2E-only smoke** (by design): homepage + blog + pricing + changelog + legal — [`tests/e2e/marketing.spec.ts`](../../tests/e2e/marketing.spec.ts) (PRD §23.2); no separate **`tests/integration`** marketing runner required.
 
 ## Key paths (actual)
 

@@ -9,7 +9,7 @@ Companion references for building [nextjs-multitenant-starter-PRD-v4.md](../../n
 | 1 | [phase-01-scaffold-and-design-system.md](phase-01-scaffold-and-design-system.md) | Layout, deps, shadcn, Tailwind, `next.config` |
 | 2 | [phase-02-database-payload-auth.md](phase-02-database-payload-auth.md) | Drizzle, Payload collections, better-auth, migrations, org mirror + **admin/product auth URLs** *(doc aligned with repo)* |
 | 3 | [phase-03-middleware-email-query.md](phase-03-middleware-email-query.md) | **`proxy.ts`** (Next 16), email, TanStack Query |
-| 4 | [phase-04-auth-and-marketing.md](phase-04-auth-and-marketing.md) | Auth pages, marketing, MDX, sitemap |
+| 4 | [phase-04-auth-and-marketing.md](phase-04-auth-and-marketing.md) | Auth pages, marketing, MDX, sitemap (**marketing smoke:** Playwright only — [`marketing.spec.ts`](../../tests/e2e/marketing.spec.ts)) |
 | 5 | [phase-05-dashboard-orgs.md](phase-05-dashboard-orgs.md) | Dashboard shell, orgs, members, invitations — **complete** (E2E; optional Vitest harness) |
 | 6 | [phase-06-audit-flags-quotas-webhooks.md](phase-06-audit-flags-quotas-webhooks.md) | Audit logs, flags, quotas, Svix |
 | 7 | [phase-07-stripe-billing.md](phase-07-stripe-billing.md) | Stripe checkout, webhooks, billing UI |
