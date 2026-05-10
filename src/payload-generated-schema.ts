@@ -595,6 +595,8 @@ export const permissions = pgTable(
   (columns) => [
     index("permissions_organization_idx").on(columns.organization),
     index("permissions_subject_id_idx").on(columns.subjectId),
+    index("permissions_resource_type_idx").on(columns.resourceType),
+    index("permissions_resource_id_idx").on(columns.resourceId),
     index("permissions_updated_at_idx").on(columns.updatedAt),
     index("permissions_created_at_idx").on(columns.createdAt),
   ],

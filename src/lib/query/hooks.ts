@@ -6,6 +6,8 @@ import { authApiUrl } from "@/lib/auth/app-url";
 import { authClient } from "@/lib/auth-client";
 import { activeOrganizationIdFromSession } from "@/lib/org/session-active-org";
 
+import { isGranularPermissionsEnabled } from "@/lib/permissions/feature";
+
 import { queryKeys } from "./keys";
 
 async function fetchSessionSnapshot() {
@@ -162,11 +164,31 @@ export function useOrgBilling(orgId: string | undefined) {
   });
 }
 
-/** Wire to permissions collection in Phase 10+. */
-export function useOrgPermissions(orgId: string | undefined, filters?: object) {
+/** Granular permissions list (`GET /api/orgs/[orgId]/permissions`) when feature flag is on. */
+export function useOrgPermissions(orgId: string | undefined, filters?: Record<string, string>) {
+  const flagOn = isGranularPermissionsEnabled();
   return useQuery({
-    queryKey: orgId ? queryKeys.permissions.list(orgId, filters) : ["permissions", "none"],
-    queryFn: () => Promise.resolve([]),
-    enabled: false,
+    queryKey: orgId ? queryKeys.permissions.list(orgId, filters ?? {}) : ["permissions", "none"],
+    queryFn: async () => {
+      if (!orgId) return { docs: [], totalDocs: 0, totalPages: 0, page: 1 };
+      const sp = new URLSearchParams();
+      if (filters) {
+        for (const [k, v] of Object.entries(filters)) {
+          if (v) sp.set(k, v);
+        }
+      }
+      const q = sp.toString();
+      const res = await fetch(`/api/orgs/${orgId}/permissions${q ? `?${q}` : ""}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to load permissions");
+      return res.json() as Promise<{
+        docs: unknown[];
+        totalDocs: number;
+        totalPages: number;
+        page: number;
+      }>;
+    },
+    enabled: Boolean(orgId) && flagOn,
   });
 }

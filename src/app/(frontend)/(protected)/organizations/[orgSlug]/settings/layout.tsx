@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { SettingsNav } from "@/components/settings/settings-nav";
 import { roleAtLeast } from "@/lib/auth/rbac";
 import { resolveWebhooksEnabledFlag } from "@/lib/flags/resolver";
+import { isGranularPermissionsEnabled } from "@/lib/permissions/feature";
 import { requireOrgContextForSlug } from "@/lib/org/require-active-org";
 
 type Props = {
@@ -15,6 +16,7 @@ export default async function OrgSettingsLayout({ children, params }: Props) {
   const { role } = await requireOrgContextForSlug(orgSlug);
 
   const isAdmin = roleAtLeast(role, "admin");
+  const showGranularPermissions = isGranularPermissionsEnabled();
   let showWebhooks = false;
   if (isAdmin) {
     try {
@@ -30,7 +32,13 @@ export default async function OrgSettingsLayout({ children, params }: Props) {
       <div className="flex flex-1 flex-col gap-6 lg:flex-row lg:gap-12">
         <aside className="w-full lg:w-64 lg:shrink-0">
           <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-            <SettingsNav orgSlug={orgSlug} isAdmin={isAdmin} showWebhooks={showWebhooks} isOwner={role === "owner"} />
+            <SettingsNav
+              orgSlug={orgSlug}
+              isAdmin={isAdmin}
+              showWebhooks={showWebhooks}
+              isOwner={role === "owner"}
+              showGranularPermissions={showGranularPermissions}
+            />
           </div>
         </aside>
         <div className="min-w-0 flex-1">{children}</div>

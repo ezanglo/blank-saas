@@ -10,11 +10,13 @@ export function SettingsNav({
   isAdmin,
   showWebhooks,
   isOwner,
+  showGranularPermissions,
 }: {
   orgSlug: string;
   isAdmin: boolean;
   showWebhooks: boolean;
   isOwner: boolean;
+  showGranularPermissions: boolean;
 }) {
   const pathname = usePathname();
   const base = `/organizations/${orgSlug}/settings`;
@@ -32,6 +34,9 @@ export function SettingsNav({
   if (isAdmin) {
     items.push({ href: `${base}/billing`, label: "Billing" });
     items.push({ href: `${base}/audit-logs`, label: "Audit logs" });
+  }
+  if (isAdmin && showGranularPermissions) {
+    items.push({ href: `${base}/permissions`, label: "Permissions" });
   }
   if (isAdmin && showWebhooks) {
     items.push({ href: `${base}/webhooks`, label: "Webhooks" });

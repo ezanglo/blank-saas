@@ -1,13 +1,14 @@
 import type { CollectionConfig } from "payload";
 
+/** All reads/writes go through server actions / local API with `overrideAccess: true` (PRD §32). */
 export const Permissions: CollectionConfig = {
   slug: "permissions",
   admin: { useAsTitle: "subjectId" },
   access: {
-    read: ({ req }) => Boolean(req.user),
-    create: ({ req }) => req.user?.role === "admin",
-    update: ({ req }) => req.user?.role === "admin",
-    delete: ({ req }) => req.user?.role === "admin",
+    read: () => false,
+    create: () => false,
+    update: () => false,
+    delete: () => false,
   },
   fields: [
     {
@@ -27,8 +28,8 @@ export const Permissions: CollectionConfig = {
         { label: "Org role", value: "org_role" },
       ],
     },
-    { name: "resourceType", type: "text", required: true },
-    { name: "resourceId", type: "text", required: true },
+    { name: "resourceType", type: "text", required: true, index: true },
+    { name: "resourceId", type: "text", required: true, index: true },
     { name: "actions", type: "json", required: true },
     { name: "grantedBy", type: "text" },
     { name: "expiresAt", type: "date" },

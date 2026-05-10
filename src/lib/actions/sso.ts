@@ -92,7 +92,7 @@ export async function createOrgSamlConnectionAction(input: {
   const origin = appOrigin();
   const dashboardUrl = `${origin}/dashboard`;
 
-  const register = auth.api.registerSSOProvider as (opts: {
+  const register = auth.api.registerSSOProvider as unknown as (opts: {
     body: Record<string, unknown>;
     headers: Headers;
   }) => Promise<unknown>;
