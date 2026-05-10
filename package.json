@@ -16,7 +16,9 @@
     "generate:types": "payload generate:types",
     "generate:db-schema": "payload generate:db-schema",
     "generate:importmap": "payload generate:importmap",
-    "email:dev": "email dev --dir src/lib/email/templates"
+    "email:dev": "email dev --dir src/lib/email/templates",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -67,7 +69,9 @@
     "eslint-config-next": "16.2.6",
     "react-email": "^6.1.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.0.4",
+    "vitest": "^4.0.18"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

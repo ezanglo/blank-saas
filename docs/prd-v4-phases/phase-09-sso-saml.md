@@ -31,6 +31,18 @@ Enterprise SSO: Jackson sidecar, better-auth SAML plugin, per-org connection man
 - [ ] Login page: “Sign in with SSO” when domain has SAML §31.6 — reconcile **tenant** strategy (orgId vs domain) during implementation (see plan risk notes).
 - [ ] Audit + PostHog `sso_login` §31.7, §30.5.
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md).
+
+- **Unit** — SAML connection payload validation (URLs, entity IDs) before calling Jackson.
+- **Integration** — [`sso.ts`](../../src/lib/actions/sso.ts) actions with **mocked fetch** to Jackson; owner vs non-owner §31.5.
+
+Checklist:
+
+- [ ] Unit: domain normalization / tenant key helpers §31.6.
+- [ ] Integration: create/delete connection propagates `samlConnectionId` on Organizations §31.4.
+
 ## Key paths (expected)
 
 ```

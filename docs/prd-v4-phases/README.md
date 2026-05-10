@@ -16,10 +16,11 @@ Companion references for building [nextjs-multitenant-starter-PRD-v4.md](../../n
 | 8 | [phase-08-posthog.md](phase-08-posthog.md) | PostHog client/server, events |
 | 9 | [phase-09-sso-saml.md](phase-09-sso-saml.md) | Jackson, SAML plugin, SSO settings |
 | 10 | [phase-10-granular-permissions.md](phase-10-granular-permissions.md) | Payload Permissions, `checkPermission()` |
-| 11 | [phase-11-docker-tests-readme.md](phase-11-docker-tests-readme.md) | Docker, Playwright, README, `.env.example` |
+| 11 | [phase-11-docker-tests-readme.md](phase-11-docker-tests-readme.md) | Docker, **Playwright E2E + unit/API tests (conventions & CI)**, README, `.env.example` |
 
 ## Clarifications (carry through all phases)
 
+- **Testing:** PRD **§23** is Playwright-only. **[phase-01](phase-01-scaffold-and-design-system.md) through [phase-10](phase-10-granular-permissions.md)** each include a **Tests (unit / integration)** section—what to add **during that phase**. **[phase-11](phase-11-docker-tests-readme.md)** defines Vitest paths, Playwright, Docker, and **CI** so those tests run together with E2E.
 - **Granular auth:** Implement **PRD Section 32** (Payload-backed permissions). The Section 2 table row mentioning Permit.io is outdated.
 - **PRD Section 17.1:** “Permissions — See Section 29.3” is a typo → use **Section 32**.
 - **Next.js:** This repo targets Next 16. Request gating uses **`src/proxy.ts`** (`proxy`), not `middleware.ts`. Check Payload’s Next integration for API route patterns.

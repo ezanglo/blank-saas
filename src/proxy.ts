@@ -5,6 +5,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { apiRateLimiter } from "@/lib/quota/limiter";
+import {
+  isProtectedProductPath,
+  sessionActiveOrg,
+} from "@/lib/proxy-guards";
 import * as schema from "@/payload-generated-schema";
 
 function clientIp(request: NextRequest) {
@@ -13,25 +17,6 @@ function clientIp(request: NextRequest) {
     request.headers.get("x-real-ip") ??
     "unknown"
   );
-}
-
-function isProtectedProductPath(pathname: string) {
-  return (
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/organizations") ||
-    pathname.startsWith("/account") ||
-    pathname.startsWith("/settings")
-  );
-}
-
-function sessionActiveOrg(session: {
-  session: Record<string, unknown>;
-}): string | null {
-  const s = session.session as {
-    activeOrganizationId?: string | null;
-    activeOrganization?: string | null;
-  };
-  return s.activeOrganizationId ?? s.activeOrganization ?? null;
 }
 
 function mergeResponseHeaders(res: NextResponse, extra: Headers | undefined) {
@@ -93,9 +78,9 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  const orgSeg = pathname.match(/^\/organizations\/([^/]+)/);
-  if (orgSeg?.[1]) {
-    const slug = orgSeg[1];
+  const orgSlug = pathname.match(/^\/organizations\/([^/]+)/)?.[1];
+  if (orgSlug) {
+    const slug = orgSlug;
     const [org] = await db
       .select({ id: schema.organizations.id })
       .from(schema.organizations)

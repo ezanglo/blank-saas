@@ -37,6 +37,18 @@ Single Postgres database with a **shared Drizzle schema**: **Better Auth** on `d
 - [x] **Org mutations** — **`src/lib/actions/organization.ts`**: **`createOrganizationAction`** / **`deleteOrganizationAction`** using Better Auth API + session headers (PRD §6.5–6.6 wiring; polish like **`createAuditLog`** hooks can land in Phase 6 or ad hoc).
 - [x] **Migrations workflow** — No separate **`auth migrate`** CLI: DDL is **`payload migrate:create`** / **`pnpm payload migrate`** (or **`pnpm migrate`**). After schema changes: **`pnpm generate:db-schema`** → **`pnpm generate:types`**, then create migration, merge into **`src/migrations/index.ts`**, **`pnpm migrate`**. Scripts: **`generate:db-schema`**, **`generate:types`**, **`generate:importmap`**, **`migrate`**.
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md). Add tests **with** this phase’s code; CI once Phase 11 wires **`pnpm test:unit`** / integration jobs.
+
+- **Unit** — Vitest; colocate `*.test.ts` near [`src/lib/auth/headers.ts`](../../src/lib/auth/headers.ts), pure helpers in [`payload-access.ts`](../../src/lib/auth/payload-access.ts) where mock-free.
+- **Integration** — **`GET /api/auth/get-session`** (anonymous vs cookie session); [`organization.ts`](../../src/lib/actions/organization.ts) against **`DATABASE_URL`** test DB when stable (optional Phase 11 compose).
+
+Checklist:
+
+- [x] Unit: [`headersToWebRequestHeaders`](../../src/lib/auth/headers.ts) (copy Next-like header lists → Web `Headers`) — [`headers.test.ts`](../../src/lib/auth/headers.test.ts).
+- [ ] Integration (when Vitest + test harness ready): session route and org actions — defer heavy Payload harness to Phase 11 if needed.
+
 ### Key paths (actual, this repo)
 
 ```

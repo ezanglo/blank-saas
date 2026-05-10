@@ -31,6 +31,18 @@ Subscription billing: Checkout, Customer Portal, webhooks syncing org `plan` and
 - [ ] `src/lib/actions/billing.ts` per §8.4.
 - [ ] Fire audit events + outbound Svix per §29 (e.g. `billing.subscription_activated`).
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md).
+
+- **Unit** — `STRIPE_PRICES` → internal plan key mapping; **pure** table mapping Stripe webhook event types → org field patch objects §29.6.
+- **Integration** — `POST /api/webhooks/stripe` with **Stripe CLI** or fixture payloads + **`stripe-signature`** (test secret).
+
+Checklist:
+
+- [ ] Unit: price env parsing fails loudly when missing required keys.
+- [ ] Integration: idempotent webhook handling (duplicate `event.id`) §29.6.
+
 ## Key paths (expected)
 
 ```

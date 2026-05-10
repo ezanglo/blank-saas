@@ -31,6 +31,20 @@ Establish the repository shape, UI foundation, and build tooling so later phases
 - [ ] **sonner** toast provider in root layout.
 - [ ] [`next.config.ts`](../../next.config.ts): baseline edits from PRD §11 (defer Payload wrapper to Phase 2 if it breaks the build before Payload exists).
 
+## Tests (unit / integration)
+
+Conventions: [phase-11 — Docker, tests, README](phase-11-docker-tests-readme.md) defines Vitest paths and CI. Write tests **with** deliverables below; CI runs them once Phase 11 adds scripts.
+
+- **Unit** — Vitest; colocate `src/**/*.test.ts` (see Phase 11); optional [`tests/unit/`](../../tests/unit/) mirror layout.
+- **Integration** — real routes/DB: [`tests/integration/`](../../tests/integration/) when APIs exist.
+- **E2E** — Playwright only in Phase 11 (PRD §23).
+
+Checklist for this phase:
+
+- [x] `pnpm test:unit` (Vitest) available — wire into CI in Phase 11.
+- [ ] Optional: unit smoke for shared helpers (e.g. `cn` in [`src/lib/utils.ts`](../../src/lib/utils.ts)) if behavior must stay stable.
+- [ ] **Verification** remains required: `pnpm build`, `pnpm dev`.
+
 ## Key paths (expected)
 
 ```

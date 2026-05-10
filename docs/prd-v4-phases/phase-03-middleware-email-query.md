@@ -30,6 +30,19 @@ Centralize request gating (rate limits + session + org context), transactional e
 - [x] `src/lib/email/send.ts` + templates: `welcome`, `reset-password`, `invite-member`, `quota-warning`, `billing-alert` stub, plus `verify-email`, `magic-link`.
 - [x] TanStack Query **provider** in [`src/components/providers.tsx`](../../src/components/providers.tsx); [`src/lib/query/keys.ts`](../../src/lib/query/keys.ts); hooks in [`src/lib/query/hooks.ts`](../../src/lib/query/hooks.ts) (some stubs until later phases).
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md).
+
+- **Unit** — [`src/lib/quota/plans.ts`](../../src/lib/quota/plans.ts); [`src/lib/query/keys.ts`](../../src/lib/query/keys.ts); optional pure guards extracted from [`src/proxy.ts`](../../src/proxy.ts) (e.g. `src/lib/proxy-guards.ts`).
+- **Integration** — limiter with **no Redis env**: allows requests; full Redis/Upstash sliding window in compose (Phase 11).
+
+Checklist:
+
+- [x] Unit: `PLANS` / `PlanKey`; query key factories — [`plans.test.ts`](../../src/lib/quota/plans.test.ts), [`keys.test.ts`](../../src/lib/query/keys.test.ts).
+- [x] Unit: proxy decision helpers — [`proxy-guards.ts`](../../src/lib/proxy-guards.ts) + [`proxy-guards.test.ts`](../../src/lib/proxy-guards.test.ts).
+- [x] Unit: API rate limiter — [`limiter.test.ts`](../../src/lib/quota/limiter.test.ts): no-Redis path allows; **`REDIS_URL`** path uses mocked `ioredis` to assert deny after `API_RATE_LIMIT_PER_MINUTE` (Upstash path not mocked here; validate manually or add Phase 11 integration).
+
 ## Key paths (expected)
 
 ```

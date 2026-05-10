@@ -29,6 +29,18 @@ Authenticated product shell and organization lifecycle: switching orgs, CRUD, in
 - [ ] `src/app/api/invitations/accept/route.ts` (PRD §9.2).
 - [ ] RBAC enforcement on routes/actions per §7 (members cannot hit admin-only settings).
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md).
+
+- **Unit** — RBAC matrix as pure functions if extracted from UI (`owner` / `admin` / `member`).
+- **Integration** — server actions + [`invitations/accept`](../../src/app/api/) route with **test DB**; org slug + membership invariants vs [`proxy.ts`](../../src/proxy.ts) rules.
+
+Checklist:
+
+- [ ] Unit: role × capability matrix for settings routes §7.
+- [ ] Integration: create org / invite / accept happy paths; member denied admin-only server actions §8.
+
 ## Key paths (expected)
 
 ```

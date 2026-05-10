@@ -28,6 +28,18 @@ Resource-level ACL on top of RBAC: Payload `permissions` rows + `checkPermission
 - [ ] `/organizations/[orgSlug]/permissions` — table, filters, `GrantPermissionDialog` §32.6.
 - [ ] Document usage pattern for product layer §32.7.
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md).
+
+- **Unit** — [`checkPermission()`](../../src/lib/permissions/check.ts) truth tables for `RESOURCE_ACTIONS` §32.4; RBAC-first then granular §32.8.
+- **Integration** — Payload `access` + seeded `permissions` rows with **test DB**; [`actions/permissions.ts`](../../src/lib/actions/permissions.ts).
+
+Checklist:
+
+- [ ] Unit: deny when granular missing but RBAC would allow — confirm ordering §32.8.
+- [ ] Integration: grant/revoke/list round-trip §32.5.
+
 ## Key paths (expected)
 
 ```

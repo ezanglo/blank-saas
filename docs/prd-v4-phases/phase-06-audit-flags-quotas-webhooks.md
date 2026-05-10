@@ -32,6 +32,18 @@ Observability and platform mechanics: internal audit trail, feature flags backed
 - [ ] Webhook endpoint management UI under org §14.7.
 - [ ] `src/app/api/webhooks/svix/route.ts` operational handler §14.8.
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md).
+
+- **Unit** — `checkQuota()` math vs [`plans`](../../src/lib/quota/plans.ts); audit **event type** enums / string literals.
+- **Integration** — `GET /api/orgs/[orgId]/usage`; Svix inbound route signature or fixture; outbound `sendWebhook()` with mocked Svix client.
+
+Checklist:
+
+- [ ] Unit: quota deny vs allow edge cases §16.4.
+- [ ] Integration: usage route auth + org scope; Svix webhook handler §14.8 with test secret.
+
 ## Key paths (expected)
 
 ```

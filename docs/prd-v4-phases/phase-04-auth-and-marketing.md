@@ -29,6 +29,18 @@ Public and pre-dashboard experience: authentication forms and full marketing sur
 - [ ] `next-mdx-remote` rendering with MDX component overrides (PRD §21.6).
 - [ ] `postbuild`: `next-sitemap` (PRD §21.9, §25).
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md).
+
+- **Unit** — Zod schemas for auth forms (`sign-in`, `sign-up`, reset); helpers parsing MDX/frontmatter §12.
+- **Integration** — marketing routes return **200** and critical metadata where asserted; optional Playwright smoke deferred to Phase 11 E2E.
+
+Checklist:
+
+- [ ] Unit: validation schemas match PRD §19 (password rules, email shape).
+- [ ] Integration or E2E smoke: homepage + one blog slug render without auth (Phase 11 can own full `marketing.spec.ts` §23.2).
+
 ## Key paths (expected)
 
 ```

@@ -28,6 +28,18 @@ Product analytics: client + server capture, identity and group analytics for org
 - [ ] After login: `identify`; after org switch: `group("company", orgId, …)` §30.6.
 - [ ] Add `ph-no-capture` on sensitive inputs §30.7.
 
+## Tests (unit / integration)
+
+Conventions: [phase-11](phase-11-docker-tests-readme.md).
+
+- **Unit** — event name constants and payload shapes §30.5 (avoid typos in `$pageview` / custom events).
+- **Integration** — server analytics module (`src/lib/analytics/server.ts` per §30.4) with **mocked `posthog-node`** (`shutdown()` in teardown).
+
+Checklist:
+
+- [ ] Unit: exported event names match §30.5 table.
+- [ ] Integration: capture helpers no-op when keys unset (dev).
+
 ## Key paths (expected)
 
 ```
