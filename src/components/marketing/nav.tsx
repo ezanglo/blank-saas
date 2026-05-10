@@ -5,6 +5,10 @@ import { Menu } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  MarketingNavAuthButtons,
+  MarketingNavAuthButtonsMobile,
+} from "@/components/marketing/marketing-auth-ctas";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
@@ -60,12 +64,7 @@ export function MarketingNav() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
-              <Link href="/sign-in">Sign in</Link>
-            </Button>
-            <Button size="sm" className="hidden sm:inline-flex" asChild>
-              <Link href="/sign-up">Get started</Link>
-            </Button>
+            <MarketingNavAuthButtons />
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="md:hidden" aria-label="Open menu">
@@ -82,14 +81,7 @@ export function MarketingNav() {
                     {l.label}
                   </Link>
                 ))}
-                <div className="mt-auto flex flex-col gap-2 border-t pt-6">
-                  <Button variant="outline" asChild>
-                    <Link href="/sign-in">Sign in</Link>
-                  </Button>
-                  <Button asChild>
-                    <Link href="/sign-up">Get started</Link>
-                  </Button>
-                </div>
+                <MarketingNavAuthButtonsMobile />
               </SheetContent>
             </Sheet>
           </div>

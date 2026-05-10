@@ -1,6 +1,4 @@
-import Link from "next/link";
-
-import { Button } from "@/components/ui/button";
+import { MarketingHeroActions } from "@/components/marketing/marketing-auth-ctas";
 import { MotionSection } from "@/components/marketing/motion-section";
 
 export function HomeHero() {
@@ -24,14 +22,7 @@ export function HomeHero() {
           Organizations, auth, quotas, and Payload CMS—wired so you can focus on
           your product instead of plumbing.
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Button size="lg" asChild>
-            <Link href="/sign-up">Get started</Link>
-          </Button>
-          <Button size="lg" variant="outline" asChild>
-            <Link href="#features">View demo</Link>
-          </Button>
-        </div>
+        <MarketingHeroActions />
       </div>
     </MotionSection>
   );

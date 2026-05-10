@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type QueryClient } from "@tanstack/react-query";
 
 import { authApiUrl } from "@/lib/auth/app-url";
 import { authClient } from "@/lib/auth-client";
@@ -8,15 +8,30 @@ import { activeOrganizationIdFromSession } from "@/lib/org/session-active-org";
 
 import { queryKeys } from "./keys";
 
+async function fetchSessionSnapshot() {
+  const res = await authClient.getSession();
+  if (res.error) throw new Error(res.error.message ?? "Session fetch failed");
+  return res.data;
+}
+
+/**
+ * Drops cached session data and reloads from Better Auth. Use after establishing a cookie
+ * (e.g. email sign-in), so SPA navigations marketing nav / heroes see Dashboard immediately.
+ */
+export async function refreshClientSessionCache(queryClient: QueryClient) {
+  await queryClient.cancelQueries({ queryKey: queryKeys.session });
+  queryClient.removeQueries({ queryKey: queryKeys.session });
+  await queryClient.fetchQuery({
+    queryKey: queryKeys.session,
+    queryFn: fetchSessionSnapshot,
+  });
+}
+
 /** Session via TanStack Query (invalidate with `queryKeys.session`). */
 export function useSessionQuery() {
   return useQuery({
     queryKey: queryKeys.session,
-    queryFn: async () => {
-      const res = await authClient.getSession();
-      if (res.error) throw new Error(res.error.message ?? "Session fetch failed");
-      return res.data;
-    },
+    queryFn: fetchSessionSnapshot,
   });
 }
 

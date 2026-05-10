@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,12 +32,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { type SignInValues, signInSchema } from "@/lib/auth/schemas";
+import { refreshClientSessionCache } from "@/lib/query/hooks";
 
 export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const redirect =
-    searchParams.get("callbackUrl") ?? searchParams.get("redirect") ?? "/";
+    searchParams.get("callbackUrl") ??
+    searchParams.get("redirect") ??
+    "/dashboard";
 
   const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -53,6 +58,7 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
       return;
     }
     toast.success("Signed in");
+    await refreshClientSessionCache(queryClient);
     router.push(redirect);
     router.refresh();
   }
