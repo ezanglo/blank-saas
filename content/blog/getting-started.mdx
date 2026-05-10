@@ -1,0 +1,27 @@
+---
+title: "Getting Started with the Starter"
+date: "2026-01-15"
+description: "Orient yourself to the multi-tenant scaffold: routes, auth, and where to extend next."
+author:
+  name: "Jane Doe"
+tags: ["nextjs", "saas"]
+---
+
+## Why this stack
+
+You get a single Next.js app with a clear split between marketing, auth, and the
+product shell. Payload CMS stays isolated so operators can work without touching
+your product code paths.
+
+## First steps
+
+1. Copy `.env.example` and wire Postgres plus SMTP for transactional email.
+2. Run migrations, then create the first user—your org and admin promotion
+   hooks are already described in the auth configuration.
+3. Visit the dashboard stub and confirm the proxy sends unauthenticated users
+   to **sign-in** with `callbackUrl` preserved.
+
+## Next milestones
+
+When you outgrow the defaults, the phase docs walk you through billing,
+analytics, SSO, and granular permissions—each as an incremental layer.

@@ -22,12 +22,12 @@ Public and pre-dashboard experience: authentication forms and full marketing sur
 
 ## Deliverables (checklist)
 
-- [ ] Auth pages: `login`, `register`, `forgot-password`, `reset-password` + components under `src/components/auth/`.
-- [ ] `(frontend)/(marketing)/layout.tsx` — nav + footer (PRD §21.2).
-- [ ] Homepage sections + `framer-motion` (PRD §21.3); Features, Pricing (marketing), Blog index + `[slug]`, Changelog, Legal.
-- [ ] Content: `/content/blog/*.mdx`, `/content/changelog/*.mdx` — seed posts per PRD.
-- [ ] `next-mdx-remote` rendering with MDX component overrides (PRD §21.6).
-- [ ] `postbuild`: `next-sitemap` (PRD §21.9, §25).
+- [x] Auth pages: **`/sign-in`**, **`/sign-up`**, **`/forgot-password`**, **`/reset-password`** (repo routes; PRD “login/register” equivalents) + components under `src/components/auth/`.
+- [x] `(frontend)/(marketing)/layout.tsx` — nav + footer (PRD §21.2).
+- [x] Homepage sections + `framer-motion` (PRD §21.3); Features, Pricing (marketing), Blog index + `[slug]`, Changelog, Legal.
+- [x] Content: `/content/blog/*.mdx`, `/content/changelog/*.mdx` — seed posts per PRD.
+- [x] `next-mdx-remote` rendering with MDX component overrides (PRD §21.6).
+- [x] `postbuild`: `next-sitemap` (PRD §21.9, §25).
 
 ## Tests (unit / integration)
 
@@ -38,17 +38,21 @@ Conventions: [phase-11](phase-11-docker-tests-readme.md).
 
 Checklist:
 
-- [ ] Unit: validation schemas match PRD §19 (password rules, email shape).
+- [x] Unit: validation schemas match PRD §19 (password rules, email shape); MDX/frontmatter helpers — `src/lib/auth/schemas.test.ts`, `src/lib/mdx/schemas.test.ts`, `src/lib/mdx/format.test.ts`.
 - [ ] Integration or E2E smoke: homepage + one blog slug render without auth (Phase 11 can own full `marketing.spec.ts` §23.2).
 
 ## Key paths (expected)
 
 ```
-src/app/(auth)/login/page.tsx
+src/app/(frontend)/(auth)/sign-in/page.tsx
+src/app/(frontend)/(auth)/sign-up/page.tsx
+src/components/auth/
 src/app/(frontend)/(marketing)/page.tsx
 src/components/marketing/
+src/lib/mdx/
 content/blog/
 content/changelog/
+next-sitemap.config.cjs
 ```
 
 ## Verification

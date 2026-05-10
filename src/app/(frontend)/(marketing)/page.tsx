@@ -1,21 +1,36 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 
-import { Button } from "@/components/ui/button";
+import { HomeCta } from "@/components/marketing/sections/home-cta";
+import { HomeFaq } from "@/components/marketing/sections/home-faq";
+import { HomeFeatures } from "@/components/marketing/sections/home-features";
+import { HomeHero } from "@/components/marketing/sections/home-hero";
+import { HomeHowItWorks } from "@/components/marketing/sections/home-how-it-works";
+import { HomeLogoBar } from "@/components/marketing/sections/home-logo-bar";
+import { HomePricingPreview } from "@/components/marketing/sections/home-pricing-preview";
+import { HomeTestimonials } from "@/components/marketing/sections/home-testimonials";
+
+export const metadata: Metadata = {
+  title: "Blank SaaS — Multi-tenant starter",
+  description:
+    "Organizations, auth, quotas, and Payload CMS—multi-tenant foundations for B2B SaaS.",
+  openGraph: {
+    title: "Blank SaaS — Multi-tenant starter",
+    description:
+      "Organizations, auth, quotas, and Payload CMS—multi-tenant foundations for B2B SaaS.",
+  },
+};
 
 export default function MarketingHomePage() {
   return (
-    <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center gap-6 px-6 py-20 text-center">
-      <p className="text-sm font-medium text-muted-foreground">Phase 1 complete</p>
-      <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-        Multi-tenant starter scaffolded
-      </h1>
-      <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
-        Route groups, design tokens, and core UI providers are in place so the next
-        phases can focus on product features.
-      </p>
-      <Button asChild>
-        <Link href="/dashboard">Open dashboard stub</Link>
-      </Button>
-    </section>
+    <main>
+      <HomeHero />
+      <HomeLogoBar />
+      <HomeFeatures />
+      <HomeHowItWorks />
+      <HomePricingPreview />
+      <HomeTestimonials />
+      <HomeFaq />
+      <HomeCta />
+    </main>
   );
 }

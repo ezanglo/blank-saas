@@ -1,0 +1,25 @@
+---
+title: "Multi-tenant patterns that scale"
+date: "2026-02-01"
+description: "Practical defaults for org context, quotas, and keeping tenant data apart."
+author:
+  name: "Jane Doe"
+tags: ["architecture", "multi-tenant"]
+---
+
+## Org-scoped context
+
+Treat the active organization as part of the session story. Middleware (or the
+Next 16 proxy) should resolve membership before you render org-specific routes so
+users never see another tenant's data by accident.
+
+## Quotas before billing
+
+Wire usage counters to plan tiers early—even with display-only pricing. When
+Stripe lands, you swap the price IDs without redesigning your enforcement
+points.
+
+## Audit-friendly mutations
+
+Centralize writes behind server actions that validate with Zod, check roles,
+and emit audit events. Your future compliance story will thank you.
