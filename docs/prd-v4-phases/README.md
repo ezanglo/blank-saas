@@ -10,12 +10,12 @@ Companion references for building [nextjs-multitenant-starter-PRD-v4.md](../../n
 | 2 | [phase-02-database-payload-auth.md](phase-02-database-payload-auth.md) | Drizzle, Payload collections, better-auth, migrations, org mirror + **admin/product auth URLs** *(doc aligned with repo)* |
 | 3 | [phase-03-middleware-email-query.md](phase-03-middleware-email-query.md) | **`proxy.ts`** (Next 16), email, TanStack Query |
 | 4 | [phase-04-auth-and-marketing.md](phase-04-auth-and-marketing.md) | Auth pages, marketing, MDX, sitemap |
-| 5 | [phase-05-dashboard-orgs.md](phase-05-dashboard-orgs.md) | Dashboard shell, orgs, members, invitations — **status in doc** |
+| 5 | [phase-05-dashboard-orgs.md](phase-05-dashboard-orgs.md) | Dashboard shell, orgs, members, invitations — **complete** (E2E; optional Vitest harness) |
 | 6 | [phase-06-audit-flags-quotas-webhooks.md](phase-06-audit-flags-quotas-webhooks.md) | Audit logs, flags, quotas, Svix |
 | 7 | [phase-07-stripe-billing.md](phase-07-stripe-billing.md) | Stripe checkout, webhooks, billing UI |
-| 8 | [phase-08-posthog.md](phase-08-posthog.md) | PostHog client/server, events |
+| 8 | [phase-08-posthog.md](phase-08-posthog.md) | PostHog client/server, events — **complete** |
 | 9 | [phase-09-sso-saml.md](phase-09-sso-saml.md) | **`@better-auth/sso`** SAML, Payload `sso_providers`, SSO settings — optional Jackson Compose profile — **complete** *(manual IdP smoke deferred)* |
-| 10 | [phase-10-granular-permissions.md](phase-10-granular-permissions.md) | Payload Permissions, `checkPermission()` |
+| 10 | [phase-10-granular-permissions.md](phase-10-granular-permissions.md) | Payload Permissions, **`orgScopedAllows`** + UI — **complete** *(feature-flagged)* |
 | 11 | [phase-11-docker-tests-readme.md](phase-11-docker-tests-readme.md) | Docker, **Playwright E2E + unit/API tests (conventions & CI)**, README, `.env.example` — **complete** |
 
 ## Clarifications (carry through all phases)

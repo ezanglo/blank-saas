@@ -1,6 +1,6 @@
 # Phase 5 — Dashboard, orgs, members, invitations
 
-**Status:** deliverables implemented in this repo; **integration tests** against a test DB remain Phase 11 (see checklist).
+**Status:** deliverables implemented in this repo; **E2E** covers org lifecycle ([`tests/e2e/`](../../tests/e2e/)); optional **Vitest + Payload harness** remains incremental ([phase-11](phase-11-docker-tests-readme.md)).
 
 Maps to **Phase 5** and PRD **§26** steps **12–16**, **§5**, **§7**, **§8**, **§9**.
 
@@ -41,7 +41,7 @@ Conventions: [phase-11](phase-11-docker-tests-readme.md).
 Checklist:
 
 - [x] Unit: role × capability matrix §7 — [`rbac.test.ts`](../../src/lib/auth/rbac.test.ts).
-- [ ] Integration: create org / invite / accept happy paths; member denied admin-only actions §8 — Phase 11 when DB harness is wired.
+- [x] E2E: create org / invite / accept / member flows — [`tests/e2e/organizations.spec.ts`](../../tests/e2e/organizations.spec.ts), [`invitations.spec.ts`](../../tests/e2e/invitations.spec.ts), [`members.spec.ts`](../../tests/e2e/members.spec.ts). Optional Vitest+Payload harness for the same flows remains incremental ([phase-11](phase-11-docker-tests-readme.md)).
 
 ## Key paths (actual)
 
@@ -69,12 +69,11 @@ src/lib/auth/rbac.ts
 
 ## Gaps / follow-ups
 
-- **Integration/E2E** — exercise real DB paths in Phase 11 (marked unchecked above).
 - **`src/app/api/invitations/accept/route.ts`** — not present; parity with §9 “HTTP route” wording is satisfied by **invite page + Server Action + Better Auth `acceptInvitation`**. Add a thin API route only if something external must POST accept without Next’s action protocol.
 - **Product gating vs `proxy.ts`** — authenticated pages enforce session in **`(protected)/layout.tsx`**. [`src/proxy.ts`](../../src/proxy.ts) still tracks PRD §4.4-style ordering for when global request interception is turned on at the Next config edge; verify platform wiring separately from Phase 5 UI.
 - **OAuth / magic link** — after sign-in, ensure client session cache stays fresh (email sign-in uses [`refreshClientSessionCache`](../../src/lib/query/hooks.ts)); extend the same pattern on other auth completion paths if you see stale marketing/app chrome.
 
 ## Notes
 
-- Stub `billing.ts` / granular `permissions.ts` only as needed; full billing in Phase 7, Payload-backed permissions narrative in Phase 10.
+- **`billing.ts`** lives under Phase 7; granular permissions narrative is **[phase-10](phase-10-granular-permissions.md)** (feature-flagged).
 - Marketing **Dashboard** CTA when signed in: [`marketing-auth-ctas.tsx`](../../src/components/marketing/marketing-auth-ctas.tsx) + TanStack session query; stale cache mitigated via refresh after email sign-in (Phase 4 / query hooks).

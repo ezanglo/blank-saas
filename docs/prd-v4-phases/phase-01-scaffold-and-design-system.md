@@ -23,13 +23,13 @@ Establish the repository shape, UI foundation, and build tooling so later phases
 
 ## Deliverables (checklist)
 
-- [ ] `src/app/` skeleton: **`(frontend)/`** wraps `(marketing)`, `(auth)`, **`(protected)`** (authenticated app shell — Phase 5; PRD stubs may say `(dashboard)`) (`(frontend)/layout.tsx` owns the product `<html>`); **`(payload)/`** sibling for Payload admin (own document via `@payloadcms/next`); **`api/`** routes at `src/app/api/`.
-- [ ] Dependencies: framework stack from PRD §2 as needed for Phase 1 (Zod, RHF, TanStack Query can be installed here or when forms land).
-- [ ] **shadcn/ui** init — **new-york** style; `src/components/ui/`.
-- [ ] **Tailwind v4** + CSS variables; **Inter** via `next/font/google` in root layout.
-- [ ] **next-themes** + theme toggle pattern (user nav comes in Phase 5; root provider can live earlier).
-- [ ] **sonner** toast provider in root layout.
-- [ ] [`next.config.ts`](../../next.config.ts): baseline edits from PRD §11 (defer Payload wrapper to Phase 2 if it breaks the build before Payload exists).
+- [x] `src/app/` skeleton: **`(frontend)/`** wraps `(marketing)`, `(auth)`, **`(protected)`** (authenticated app shell — Phase 5; PRD stubs may say `(dashboard)`) (`(frontend)/layout.tsx` owns the product `<html>`); **`(payload)/`** sibling for Payload admin (own document via `@payloadcms/next`); **`api/`** routes at `src/app/api/`.
+- [x] Dependencies: framework stack from PRD §2 as needed for Phase 1 (Zod, RHF, TanStack Query can be installed here or when forms land).
+- [x] **shadcn/ui** init — **new-york** style; `src/components/ui/`.
+- [x] **Tailwind v4** + CSS variables; **Inter** via `next/font/google` in root layout.
+- [x] **next-themes** + theme toggle pattern (user nav comes in Phase 5; root provider can live earlier).
+- [x] **sonner** toast provider in root layout.
+- [x] [`next.config.ts`](../../next.config.ts): baseline edits from PRD §11; **`withPayload`** from `@payloadcms/next/withPayload` is wired (Phase 2+).
 
 ## Tests (unit / integration)
 
@@ -41,9 +41,9 @@ Conventions: [phase-11 — Docker, tests, README](phase-11-docker-tests-readme.m
 
 Checklist for this phase:
 
-- [x] `pnpm test:unit` (Vitest) available — wire into CI in Phase 11.
+- [x] `pnpm test:unit` (Vitest) available — runs in CI ([phase-11](phase-11-docker-tests-readme.md)).
 - [ ] Optional: unit smoke for shared helpers (e.g. `cn` in [`src/lib/utils.ts`](../../src/lib/utils.ts)) if behavior must stay stable.
-- [ ] **Verification** remains required: `pnpm build`, `pnpm dev`.
+- [x] **Verification:** `pnpm build` and `pnpm dev` validated locally; CI runs lint, typecheck, unit, integration, and E2E ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)).
 
 ## Key paths (expected)
 

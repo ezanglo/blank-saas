@@ -47,7 +47,7 @@ Conventions: [phase-11](phase-11-docker-tests-readme.md). Add tests **with** thi
 Checklist:
 
 - [x] Unit: [`headersToWebRequestHeaders`](../../src/lib/auth/headers.ts) (copy Next-like header lists → Web `Headers`) — [`headers.test.ts`](../../src/lib/auth/headers.test.ts).
-- [ ] Integration (when Vitest + test harness ready): session route and org actions — defer heavy Payload harness to Phase 11 if needed.
+- [ ] Integration (optional deep harness): dedicated Vitest + Payload DB harness for raw session routes vs org actions — partially superseded by Playwright E2E (`tests/e2e/organizations.spec.ts`, `invitations.spec.ts`, etc.) and targeted integration tests under [`tests/integration/`](../../tests/integration/).
 
 ### Key paths (actual, this repo)
 

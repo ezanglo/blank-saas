@@ -39,7 +39,7 @@ Conventions: [phase-11](phase-11-docker-tests-readme.md).
 Checklist:
 
 - [x] Unit: validation schemas match PRD §19 (password rules, email shape); MDX/frontmatter helpers — `src/lib/auth/schemas.test.ts`, `src/lib/mdx/schemas.test.ts`, `src/lib/mdx/format.test.ts`.
-- [ ] Integration or E2E smoke: homepage + one blog slug render without auth (Phase 11 can own full `marketing.spec.ts` §23.2).
+- [x] E2E smoke: homepage + blog + pricing + changelog + legal — [`tests/e2e/marketing.spec.ts`](../../tests/e2e/marketing.spec.ts) (PRD §23.2).
 
 ## Key paths (actual)
 

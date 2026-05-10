@@ -20,13 +20,13 @@ Product analytics: client + server capture, identity and group analytics for org
 
 ## Deliverables (checklist)
 
-- [ ] `src/lib/analytics/client.tsx` — `PostHogProvider`, init options §30.3.
-- [ ] `PostHogPageView` — `$pageview` on pathname change §30.3.
-- [ ] `src/lib/analytics/server.ts` — `posthog-node` singleton §30.4; **shutdown** in tests §30.4.
-- [ ] `src/hooks/use-analytics.ts` §30.8.
-- [ ] Instrument rows from §30.5 at indicated call sites (org create/delete, invite, Stripe webhooks, quota denial, flag adapter, SAML callback).
-- [ ] After login: `identify`; after org switch: `group("company", orgId, …)` §30.6.
-- [ ] Add `ph-no-capture` on sensitive inputs §30.7.
+- [x] [`src/lib/analytics/client.tsx`](../../src/lib/analytics/client.tsx) — `PostHogProvider`, `PostHogPageView`, init options §30.3 (wired from [`providers.tsx`](../../src/components/providers.tsx)).
+- [x] **Custom `$pageview`** — pathname-driven capture via [`PostHogPageView`](../../src/lib/analytics/client.tsx) (`capture_pageview: false` + explicit [`PAGEVIEW`](../../src/lib/analytics/events.ts)).
+- [x] [`src/lib/analytics/server.ts`](../../src/lib/analytics/server.ts) — `posthog-node` singleton §30.4; [`shutdownAnalytics`](../../src/lib/analytics/server.ts) for tests/teardown.
+- [x] [`src/hooks/use-analytics.ts`](../../src/hooks/use-analytics.ts) §30.8 (`OrgSwitcher` group analytics).
+- [x] Core §30.5 instrumentation — server [`captureServerEvent`](../../src/lib/analytics/server.ts) from [`organization`](../../src/lib/actions/organization.ts), [`member`](../../src/lib/actions/member.ts), [`billing/process-webhook`](../../src/lib/billing/process-webhook.tsx), [`quota/check`](../../src/lib/quota/check.ts), [`flags/adapter`](../../src/lib/flags/adapter.ts), SSO [`post-login`](../../src/lib/sso/post-login.ts); names in [`events.ts`](../../src/lib/analytics/events.ts).
+- [x] **Identify + group** — [`PostHogIdentify`](../../src/lib/analytics/client.tsx) in protected [`layout.tsx`](../../src/app/(frontend)/(protected)/layout.tsx); **`company`** group via [`posthog-workspace-group.tsx`](../../src/components/analytics/posthog-workspace-group.tsx) / [`org-switcher.tsx`](../../src/components/layout/org-switcher.tsx) §30.6.
+- [x] **`ph-no-capture`** on password / sensitive auth inputs ([sign-in/up](../../src/components/auth/), [account](../../src/app/(frontend)/(protected)/account/page.tsx), admin auth stubs).
 
 ## Tests (unit / integration)
 
@@ -37,8 +37,8 @@ Conventions: [phase-11](phase-11-docker-tests-readme.md).
 
 Checklist:
 
-- [ ] Unit: exported event names match §30.5 table.
-- [ ] Integration: capture helpers no-op when keys unset (dev).
+- [x] Unit: event constants — [`events.test.ts`](../../src/lib/analytics/events.test.ts).
+- [x] Unit: server capture no-op / shutdown — [`server.test.ts`](../../src/lib/analytics/server.test.ts).
 
 ## Key paths (expected)
 
