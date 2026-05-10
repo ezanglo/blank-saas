@@ -10,7 +10,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Blank SaaS",
-  description: "Multi-tenant SaaS starter scaffold",
+  description: "Open source multi-tenant Next.js starter (Payload, Better Auth, Postgres).",
 };
 
 /**

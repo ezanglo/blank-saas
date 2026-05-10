@@ -30,6 +30,7 @@ Run before promoting CSP/Sentry changes or infra upgrades.
 
 - [ ] Trigger a benign server error (temporary throw route or forced **400**) — event lands with scrubbed query strings / headers (`beforeSend` in [`src/lib/sentry/options.ts`](../../src/lib/sentry/options.ts)).
 - [ ] Confirm webhook routes `/api/webhooks/stripe` and `/api/webhooks/svix` remain excluded from heavy server instrumentation via [`next.config.ts`](../../next.config.ts) `excludeServerRoutes`.
+- [ ] If browser ad blockers eat requests to Sentry ingest, set `SENTRY_TUNNEL_ROUTE=auto` (or a path string) in `.env.example` / production env so the SDK uses the app’s tunnel route configured in `withSentryConfig`.
 
 ## Headers sanity
 

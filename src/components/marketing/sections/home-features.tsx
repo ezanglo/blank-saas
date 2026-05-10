@@ -1,53 +1,95 @@
-import { Building2, Shield, Users } from "lucide-react";
+import {
+  Building2,
+  CreditCard,
+  Database,
+  Mail,
+  Radar,
+  Shield,
+  Users,
+  Webhook,
+  Workflow,
+} from "lucide-react";
 
 import { MotionSection } from "@/components/marketing/motion-section";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 const items = [
   {
     icon: Building2,
     title: "Organizations first",
     description:
-      "Members, roles, and invitations with a clear path to granular permissions later.",
+      "Workspaces, members, and invitations—roles stay understandable as you grow into granular permissions.",
   },
   {
     icon: Users,
-    title: "Built-in collaboration",
+    title: "Collaboration",
     description:
-      "Switch org context, invite teammates, and keep product data scoped per tenant.",
+      "Switch org context, invite teammates, and keep tenant data scoped without rolling your own RBAC from scratch.",
   },
   {
     icon: Shield,
-    title: "Operational guardrails",
+    title: "Rate limits & quotas",
     description:
-      "Rate limits and quotas aligned with your plans so growth stays predictable.",
+      "Plan-aware limits so usage stays predictable before you wire every edge of billing.",
+  },
+  {
+    icon: CreditCard,
+    title: "Stripe-ready billing",
+    description:
+      "Checkout and portal hooks aligned with quota keys in code—bring your own Stripe prices.",
+  },
+  {
+    icon: Webhook,
+    title: "Svix outbound webhooks",
+    description:
+      "Customer-facing webhooks with signing and delivery semantics, not raw POST in your API routes.",
+  },
+  {
+    icon: Database,
+    title: "Payload on Postgres",
+    description:
+      "Operators get a real CMS admin; you keep one schema and migrations through Payload’s Postgres adapter.",
+  },
+  {
+    icon: Mail,
+    title: "Transactional email",
+    description:
+      "React Email templates and SMTP—verify accounts, invites, and alerts without a second mail system.",
+  },
+  {
+    icon: Radar,
+    title: "Optional observability",
+    description:
+      "PostHog and Sentry are env-gated so you enable analytics and errors when you deploy—not by default.",
+  },
+  {
+    icon: Workflow,
+    title: "Audit-friendly patterns",
+    description:
+      "Audit log hooks for sensitive actions so you can explain who did what when customers ask.",
   },
 ] as const;
 
 export function HomeFeatures() {
   return (
-    <MotionSection id="features" className="px-6 py-16 md:py-24">
+    <MotionSection id="features" className="bg-muted/25 px-6 py-20 md:py-28">
       <div className="mx-auto max-w-6xl">
-        <h2 className="text-center text-3xl font-semibold tracking-tight">
-          Everything you need to launch
+        <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
+          Built for multi-tenant products
         </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
-          Opinionated defaults for multi-tenant SaaS—extend when you need more.
+        <p className="mx-auto mt-4 max-w-3xl text-center text-lg text-muted-foreground">
+          A single codebase that covers the boring cross-cutting layers—so you spend time on features
+          customers pay for, not plumbing experiments.
         </p>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map(({ icon: Icon, title, description }) => (
-            <Card key={title}>
-              <CardHeader>
-                <Icon className="mb-2 size-8 text-primary" aria-hidden />
-                <CardTitle className="text-lg">{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-              </CardHeader>
-            </Card>
+            <div
+              key={title}
+              className="rounded-2xl border border-border/80 bg-card p-6 shadow-sm transition-colors hover:border-border"
+            >
+              <Icon className="size-9 text-primary" aria-hidden />
+              <h3 className="mt-4 text-lg font-semibold tracking-tight">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+            </div>
           ))}
         </div>
       </div>

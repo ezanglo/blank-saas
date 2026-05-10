@@ -30,6 +30,8 @@ export type SendMailOptions = {
   html?: string;
   /** React Email template — rendered to HTML when SMTP is configured */
   react?: ReactElement;
+  /** Reply-To header (e.g. contact form submitter) */
+  replyTo?: string;
 };
 
 /** Sends transactional mail; logs when `SMTP_HOST` is unset (local dev). */
@@ -56,5 +58,6 @@ export async function sendTransactionalEmail(options: SendMailOptions) {
     subject: options.subject,
     text: options.text ?? (html ? undefined : ""),
     html: html ?? options.text,
+    ...(options.replyTo ? { replyTo: options.replyTo } : {}),
   });
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 
 import { MotionSection } from "@/components/marketing/motion-section";
@@ -33,10 +34,28 @@ const blocks = [
     side: "left" as const,
   },
   {
+    title: "Billing & Stripe",
+    body:
+      "Checkout and customer portal hooks line up with quota keys in code—swap Stripe prices while keeping PLANS as the source of limits.",
+    side: "right" as const,
+  },
+  {
     title: "Payload CMS for operators",
     body:
       "Give admins a real UI for content and configuration while your app stays in the App Router.",
+    side: "left" as const,
+  },
+  {
+    title: "Webhooks & integrations",
+    body:
+      "Outbound org webhooks via Svix and inbound Stripe/Svix routes—so automation stays outside your core request path.",
     side: "right" as const,
+  },
+  {
+    title: "Observability hooks",
+    body:
+      "PostHog wiring for product analytics and optional Sentry for errors—each gated by env so you enable them when you are ready.",
+    side: "left" as const,
   },
 ];
 
@@ -46,8 +65,12 @@ export default function FeaturesPage() {
       <div className="mx-auto max-w-6xl">
         <h1 className="text-4xl font-semibold tracking-tight">Features</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          A guided tour of the major pillars—each section is a launch point for
-          deeper docs in later phases.
+          The project <strong className="text-foreground">README</strong> has the full feature table
+          (what, why, and which env vars to set). This page is a short tour of the major pillars—see{" "}
+          <Link href="/pricing" className="font-medium text-foreground underline underline-offset-4">
+            Pricing
+          </Link>{" "}
+          for example tiers and <Link className="font-medium text-foreground underline underline-offset-4" href="/">the homepage</Link> for positioning.
         </p>
         <div className="mt-16 flex flex-col gap-20">
           {blocks.map((b) => (

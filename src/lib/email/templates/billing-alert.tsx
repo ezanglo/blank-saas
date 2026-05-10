@@ -1,12 +1,10 @@
+import { Heading, Text } from "@react-email/components";
+
 import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Text,
-} from "@react-email/components";
+  EmailPrimaryButton,
+  emailText,
+  TransactionalEmailLayout,
+} from "@/lib/email/transactional-layout";
 
 export type BillingAlertKind = "payment_failed" | "subscription_cancelled" | "trial_ending";
 
@@ -41,32 +39,13 @@ export default function BillingAlertEmail({
   }
 
   return (
-    <Html>
-      <Head />
-      <Body style={{ backgroundColor: "#fafafa", fontFamily: "sans-serif" }}>
-        <Container style={{ margin: "0 auto", padding: "24px", maxWidth: "480px" }}>
-          <Heading style={{ fontSize: "20px" }}>{headline}</Heading>
-          <Text style={{ fontSize: "14px", lineHeight: "1.5" }}>Organization: {orgName}</Text>
-          {detail ? (
-            <Text style={{ fontSize: "14px", lineHeight: "1.5", color: "#444" }}>{detail}</Text>
-          ) : null}
-          <Button
-            href={portalUrl}
-            style={{
-              display: "inline-block",
-              marginTop: "16px",
-              padding: "12px 20px",
-              backgroundColor: "#111",
-              color: "#fff",
-              borderRadius: "6px",
-              textDecoration: "none",
-              fontSize: "14px",
-            }}
-          >
-            Manage billing
-          </Button>
-        </Container>
-      </Body>
-    </Html>
+    <TransactionalEmailLayout previewText={headline}>
+      <Heading as="h1" style={{ fontSize: "20px", fontWeight: 600, margin: "0 0 12px" }}>
+        {headline}
+      </Heading>
+      <Text style={emailText}>Organization: {orgName}</Text>
+      {detail ? <Text style={{ ...emailText, color: "#404040" }}>{detail}</Text> : null}
+      <EmailPrimaryButton href={portalUrl}>Manage billing</EmailPrimaryButton>
+    </TransactionalEmailLayout>
   );
 }

@@ -1,12 +1,11 @@
+import { Heading, Text } from "@react-email/components";
+
 import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Text,
-} from "@react-email/components";
+  EmailPrimaryButton,
+  emailMutedText,
+  emailText,
+  TransactionalEmailLayout,
+} from "@/lib/email/transactional-layout";
 
 export type InviteMemberEmailProps = {
   inviterName: string;
@@ -22,33 +21,17 @@ export default function InviteMemberEmail({
   expiresInHours,
 }: InviteMemberEmailProps) {
   return (
-    <Html>
-      <Head />
-      <Body style={{ backgroundColor: "#fafafa", fontFamily: "sans-serif" }}>
-        <Container style={{ margin: "0 auto", padding: "24px", maxWidth: "480px" }}>
-          <Heading style={{ fontSize: "20px" }}>You&apos;re invited</Heading>
-          <Text style={{ fontSize: "14px", lineHeight: "1.5" }}>
-            {inviterName} invited you to join <strong>{orgName}</strong>.
-          </Text>
-          <Text style={{ fontSize: "14px", lineHeight: "1.5", color: "#666" }}>
-            This invitation expires in {expiresInHours} hours.
-          </Text>
-          <Button
-            href={inviteUrl}
-            style={{
-              display: "inline-block",
-              padding: "12px 20px",
-              backgroundColor: "#111",
-              color: "#fff",
-              textDecoration: "none",
-              borderRadius: "6px",
-              fontSize: "14px",
-            }}
-          >
-            Accept invitation
-          </Button>
-        </Container>
-      </Body>
-    </Html>
+    <TransactionalEmailLayout
+      previewText={`${inviterName} invited you to ${orgName} on Blank SaaS`}
+    >
+      <Heading as="h1" style={{ fontSize: "20px", fontWeight: 600, margin: "0 0 12px" }}>
+        You&apos;re invited
+      </Heading>
+      <Text style={emailText}>
+        {inviterName} invited you to join <strong>{orgName}</strong>.
+      </Text>
+      <Text style={emailMutedText}>This invitation expires in {expiresInHours} hours.</Text>
+      <EmailPrimaryButton href={inviteUrl}>Accept invitation</EmailPrimaryButton>
+    </TransactionalEmailLayout>
   );
 }

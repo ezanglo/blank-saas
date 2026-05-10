@@ -8,27 +8,30 @@ import {
 
 const faqs = [
   {
-    q: "Is this production-ready?",
-    a: "It is a strong foundation: you should still harden auth, observability, and compliance for your domain.",
+    q: "Is this meant for production?",
+    a: "It’s a working foundation: you still own security review, compliance, and infra for your environment.",
   },
   {
-    q: "Can I swap the database or email provider?",
-    a: "Yes—the stack uses standard Postgres and SMTP-friendly email; adapt env and config to your providers.",
+    q: "Can I swap database or email?",
+    a: "Yes—Postgres and SMTP are standard; change env and adapters to match your providers.",
   },
   {
-    q: "How does billing work?",
-    a: "Marketing pricing is illustrative. Stripe and subscription state arrive in a dedicated billing phase.",
+    q: "What about Stripe and quotas on the /pricing page?",
+    a: "Those numbers illustrate PLANS in code—they’re not a product you buy here. Wire your own Stripe prices when you ship billing.",
   },
 ] as const;
 
 export function HomeFaq() {
   return (
-    <MotionSection className="px-6 py-16 md:py-24">
-      <div className="mx-auto max-w-2xl">
-        <h2 className="text-center text-3xl font-semibold tracking-tight">
-          FAQ
+    <MotionSection className="px-6 py-20 md:py-28">
+      <div className="mx-auto max-w-3xl">
+        <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
+          Frequently asked questions
         </h2>
-        <Accordion type="single" collapsible className="mt-10 w-full">
+        <p className="mx-auto mt-4 max-w-2xl text-center text-muted-foreground">
+          Practical answers for developers evaluating or forking the repo.
+        </p>
+        <Accordion type="single" collapsible className="mt-12 w-full">
           {faqs.map((item, i) => (
             <AccordionItem key={item.q} value={`item-${i}`}>
               <AccordionTrigger className="text-left">{item.q}</AccordionTrigger>

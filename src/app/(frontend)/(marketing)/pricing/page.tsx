@@ -89,7 +89,8 @@ export default async function PricingPage() {
       <div className="mx-auto max-w-6xl">
         <h1 className="text-4xl font-semibold tracking-tight">Pricing</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Paid tiers use the same Stripe Price objects as checkout. Limits mirror{" "}
+          Example <strong>starter</strong> tiers—the same Stripe Price IDs as checkout when billing
+          env is set; swap in your own catalog when you fork. Numeric limits mirror{" "}
           <code className="rounded bg-muted px-1 py-0.5 text-xs">PLANS</code> in code.
         </p>
 

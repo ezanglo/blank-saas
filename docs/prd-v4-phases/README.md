@@ -17,6 +17,7 @@ Companion references for building [nextjs-multitenant-starter-PRD-v4.md](../../n
 | 9 | [phase-09-sso-saml.md](phase-09-sso-saml.md) | **`@better-auth/sso`** SAML, Payload `sso_providers`, SSO settings — optional Jackson Compose profile — **complete** *(manual IdP smoke deferred)* |
 | 10 | [phase-10-granular-permissions.md](phase-10-granular-permissions.md) | Payload Permissions, **`orgScopedAllows`** + UI — **complete** *(feature-flagged)* |
 | 11 | [phase-11-docker-tests-readme.md](phase-11-docker-tests-readme.md) | Docker, **Playwright E2E + unit/API tests (conventions & CI)**, README, `.env.example` — **complete** |
+| 12 | [phase-12-production-polish-and-hardening.md](phase-12-production-polish-and-hardening.md) | CSP/Sentry/runbooks, README + marketing, skeletons, email layout, optional API extras — **code complete**; **staging smoke** operator-run |
 
 ## Clarifications (carry through all phases)
 

@@ -1,20 +1,22 @@
-import { Body, Container, Head, Heading, Html, Text } from "@react-email/components";
+import { Heading, Text } from "@react-email/components";
+
+import {
+  emailText,
+  TransactionalEmailLayout,
+} from "@/lib/email/transactional-layout";
 
 export type WelcomeEmailProps = { name: string };
 
 export default function WelcomeEmail({ name }: WelcomeEmailProps) {
   return (
-    <Html>
-      <Head />
-      <Body style={{ backgroundColor: "#fafafa", fontFamily: "sans-serif" }}>
-        <Container style={{ margin: "0 auto", padding: "24px", maxWidth: "480px" }}>
-          <Heading style={{ fontSize: "20px" }}>Welcome</Heading>
-          <Text style={{ fontSize: "14px", lineHeight: "1.5" }}>Hi {name},</Text>
-          <Text style={{ fontSize: "14px", lineHeight: "1.5" }}>
-            Thanks for joining — your account is ready.
-          </Text>
-        </Container>
-      </Body>
-    </Html>
+    <TransactionalEmailLayout previewText={`Welcome, ${name}`}>
+      <Heading as="h1" style={{ fontSize: "20px", fontWeight: 600, margin: "0 0 12px" }}>
+        Welcome
+      </Heading>
+      <Text style={emailText}>Hi {name},</Text>
+      <Text style={{ ...emailText, marginBottom: 0 }}>
+        Thanks for joining — your account is ready.
+      </Text>
+    </TransactionalEmailLayout>
   );
 }

@@ -17,5 +17,7 @@ Hosted Postgres/Svix/Stripe remain unchanged across models; differences are **TL
 | PostHog client + incidents | [`posthog.md`](posthog.md) |
 | CSP allowlist + rollout | [`csp-matrix.md`](csp-matrix.md) |
 | Staging smoke checklist | [`staging-checklist.md`](staging-checklist.md) |
+| Route guards (proxy vs layouts) | [`route-guards-matrix.md`](route-guards-matrix.md) |
+| SAML IdP smoke matrix | [`saml-idp-matrix.md`](saml-idp-matrix.md) |
 
 Secrets stay in `.env` / your secret manager — reference keys by name from [`.env.example`](../../.env.example); do not paste production values into docs.

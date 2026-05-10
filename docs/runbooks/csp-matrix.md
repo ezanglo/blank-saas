@@ -14,10 +14,12 @@ Baseline directives are assembled in [`src/lib/security/http-headers.ts`](../../
 
 Keep this table aligned with code when tightening directives.
 
+`next.config.ts` applies **two** header sources (see [`src/lib/security/http-headers.ts`](../../src/lib/security/http-headers.ts)): `/:path*` first, then `/admin/:path*`. When a request matches both (Payload CMS under `/admin`), Next merges headers; **duplicate keys use the last matching block**, so the **`/admin` CSP** overrides the global **`Content-Security-Policy`** for admin routes. The admin variant adds **`blob:`** on `frame-src` (media/preview iframes) and **`'wasm-unsafe-eval'`** on `script-src` where the admin bundle needs it.
+
 | Area | Typical origins / keywords | Notes |
 |------|---------------------------|--------|
 | First-party | `'self'` | App HTML/API |
-| Payload **`/admin`** | `'unsafe-inline'`, `'unsafe-eval'` (often required for bundled admin) | Payload constraint from Phase docs — expect violations until narrowed per subdomain split |
+| Payload **`/admin`** | `'unsafe-inline'`, `'unsafe-eval'`, **`wasm-unsafe-eval`**, **`blob:`** (`frame-src`) | Dedicated header block; still expect iteration if your Payload/plugins add third-party origins |
 | Better Auth | `'self'` | `/api/auth/*` same-origin |
 | Stripe Checkout / Elements | `https://js.stripe.com`, `https://hooks.stripe.com`, `https://api.stripe.com`, `https://*.stripe.network`, frames `checkout.stripe.com`, `billing.stripe.com`, … | Expand if Stripe adds new endpoints |
 | PostHog | Origin from `NEXT_PUBLIC_POSTHOG_HOST` | EU/US clouds differ — set env explicitly |
@@ -32,9 +34,4 @@ Keep this table aligned with code when tightening directives.
 
 ### Payload `/admin` tradeoff
 
-Strict CSP without `'unsafe-inline'` frequently breaks webpack-heavy admin SPAs. Acceptable patterns:
-
-- Looser CSP **only** for `/admin` via route-split headers (future Next matcher tuning), or
-- Host admin on a **subdomain** with its own policy (document blast radius).
-
-The starter ships one global policy for simplicity — tighten deliberately.
+Strict CSP without `'unsafe-inline'` frequently breaks webpack-heavy admin SPAs. This repo uses a **dedicated `/admin/:path*` CSP override** (see Implementation above) so the marketing/product shell can stay on the default policy while Payload admin can include **`wasm-unsafe-eval`** and **`blob:`** `frame-src` where needed. A stricter long-term pattern is to host admin on a **subdomain** with its own policy (smaller blast radius).

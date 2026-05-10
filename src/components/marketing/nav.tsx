@@ -14,9 +14,11 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/features", label: "Features" },
+  { href: "/#stack", label: "Stack" },
   { href: "/pricing", label: "Pricing" },
   { href: "/blog", label: "Blog" },
   { href: "/changelog", label: "Changelog" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 export function MarketingNav() {

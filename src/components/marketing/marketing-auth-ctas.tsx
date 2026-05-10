@@ -2,54 +2,62 @@
 
 import Link from "next/link";
 
+import { GitHubMark } from "@/components/icons/github-mark";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useSessionQuery } from "@/lib/query/hooks";
+import { PUBLIC_GITHUB_REPO_URL } from "@/lib/marketing/public-repo";
 
 function useMarketingSignedIn(): { signedIn: boolean; isLoading: boolean } {
   const { data, isLoading } = useSessionQuery();
   return { signedIn: Boolean(data?.user), isLoading };
 }
 
-/** Nav bar: sign in / get started, or dashboard when session exists. */
+/** GitHub repo link (icon) — shared by marketing header. */
+export function MarketingNavGithubButton() {
+  return (
+    <Button variant="outline" size="icon-sm" className="shrink-0" asChild>
+      <Link
+        href={PUBLIC_GITHUB_REPO_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="View source on GitHub"
+      >
+        <GitHubMark className="size-4" />
+      </Link>
+    </Button>
+  );
+}
+
+/**
+ * Nav bar header CTAs: theme toggle, GitHub, Sign in (or Dashboard).
+ * Sign up stays in the mobile sheet and other entry points, not in this strip.
+ */
 export function MarketingNavAuthButtons() {
   const { signedIn, isLoading } = useMarketingSignedIn();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
+  return (
+    <div className="flex items-center gap-1.5 sm:gap-2">
+      <ThemeToggle />
+      <MarketingNavGithubButton />
+      {isLoading ? (
+        <Button variant="ghost" size="sm" className="inline-flex" asChild>
           <Link href="/sign-in">Sign in</Link>
         </Button>
-        <Button size="sm" className="hidden sm:inline-flex" asChild>
-          <Link href="/sign-up">Get started</Link>
-        </Button>
-      </div>
-    );
-  }
-
-  if (signedIn) {
-    return (
-      <div className="flex items-center gap-2">
-        <Button size="sm" className="hidden sm:inline-flex" asChild>
+      ) : signedIn ? (
+        <Button size="sm" className="inline-flex" asChild>
           <Link href="/dashboard">Dashboard</Link>
         </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
-        <Link href="/sign-in">Sign in</Link>
-      </Button>
-      <Button size="sm" className="hidden sm:inline-flex" asChild>
-        <Link href="/sign-up">Get started</Link>
-      </Button>
+      ) : (
+        <Button variant="ghost" size="sm" className="inline-flex" asChild>
+          <Link href="/sign-in">Sign in</Link>
+        </Button>
+      )}
     </div>
   );
 }
 
-/** Mobile sheet footer auth actions. */
+/** Mobile sheet footer auth actions (theme + GitHub live in the sticky header). */
 export function MarketingNavAuthButtonsMobile() {
   const { signedIn, isLoading } = useMarketingSignedIn();
 
@@ -60,7 +68,7 @@ export function MarketingNavAuthButtonsMobile() {
           <Link href="/sign-in">Sign in</Link>
         </Button>
         <Button asChild>
-          <Link href="/sign-up">Get started</Link>
+          <Link href="/sign-up">Sign up</Link>
         </Button>
       </div>
     );
@@ -82,7 +90,7 @@ export function MarketingNavAuthButtonsMobile() {
         <Link href="/sign-in">Sign in</Link>
       </Button>
       <Button asChild>
-        <Link href="/sign-up">Get started</Link>
+        <Link href="/sign-up">Sign up</Link>
       </Button>
     </div>
   );
@@ -93,12 +101,12 @@ export function MarketingHeroActions() {
 
   if (isLoading) {
     return (
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         <Button size="lg" asChild>
-          <Link href="/sign-up">Get started</Link>
+          <Link href="/sign-up">Sign up</Link>
         </Button>
         <Button size="lg" variant="outline" asChild>
-          <Link href="#features">View demo</Link>
+          <Link href="/features">Features</Link>
         </Button>
       </div>
     );
@@ -106,55 +114,69 @@ export function MarketingHeroActions() {
 
   if (signedIn) {
     return (
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-3">
         <Button size="lg" asChild>
           <Link href="/dashboard">Go to dashboard</Link>
         </Button>
         <Button size="lg" variant="outline" asChild>
-          <Link href="#features">View demo</Link>
+          <Link href="/features">Features</Link>
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+    <div className="flex flex-wrap items-center justify-center gap-3">
       <Button size="lg" asChild>
-        <Link href="/sign-up">Get started</Link>
+        <Link href="/sign-up">Sign up</Link>
       </Button>
       <Button size="lg" variant="outline" asChild>
-        <Link href="#features">View demo</Link>
+        <Link href="/features">Features</Link>
       </Button>
     </div>
   );
 }
 
-export function MarketingHomeCtaSection() {
+/** Bottom CTA strip: primary app action + GitHub (Dokploy-style dual path). */
+export function MarketingHomeBottomActions() {
   const { signedIn, isLoading } = useMarketingSignedIn();
 
+  const githubButton = (
+    <Button size="lg" variant="outline" asChild>
+      <Link href={PUBLIC_GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
+        GitHub
+      </Link>
+    </Button>
+  );
+
+  if (isLoading) {
+    return (
+      <>
+        <Button size="lg" asChild>
+          <Link href="/sign-up">Sign up</Link>
+        </Button>
+        {githubButton}
+      </>
+    );
+  }
+
+  if (signedIn) {
+    return (
+      <>
+        <Button size="lg" asChild>
+          <Link href="/dashboard">Dashboard</Link>
+        </Button>
+        {githubButton}
+      </>
+    );
+  }
+
   return (
-    <div className="mx-auto flex max-w-3xl flex-col items-center rounded-2xl border bg-card px-8 py-12 text-center shadow-sm">
-      <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-        {signedIn && !isLoading ? "Welcome back" : "Ready to build your tenant model?"}
-      </h2>
-      <p className="mt-3 text-muted-foreground">
-        {signedIn && !isLoading
-          ? "Open your dashboard to pick up where you left off."
-          : "Create an account and open the dashboard stub in one flow."}
-      </p>
-      {isLoading ? (
-        <Button size="lg" className="mt-8" asChild>
-          <Link href="/sign-up">Get started free</Link>
-        </Button>
-      ) : signedIn ? (
-        <Button size="lg" className="mt-8" asChild>
-          <Link href="/dashboard">Go to dashboard</Link>
-        </Button>
-      ) : (
-        <Button size="lg" className="mt-8" asChild>
-          <Link href="/sign-up">Get started free</Link>
-        </Button>
-      )}
-    </div>
+    <>
+      <Button size="lg" asChild>
+        <Link href="/sign-up">Sign up</Link>
+      </Button>
+      {githubButton}
+    </>
   );
 }

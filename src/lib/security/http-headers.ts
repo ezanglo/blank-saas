@@ -17,16 +17,23 @@ export function posthogCspOrigin(): string {
 }
 
 /** Baseline CSP candidates for iteration (report-only first). Keep in sync with docs/runbooks/csp-matrix.md */
-export function contentSecurityPolicyDirectives(): string {
+export function contentSecurityPolicyDirectives(
+  options: { payloadAdmin?: boolean } = {},
+): string {
+  const { payloadAdmin = false } = options;
   const posthog = posthogCspOrigin();
+  const frameSrc = payloadAdmin
+    ? `'self' blob: https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://billing.stripe.com https://connect.stripe.com`
+    : `'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://billing.stripe.com https://connect.stripe.com`;
+  const scriptSrcExtras = payloadAdmin ? " 'wasm-unsafe-eval'" : "";
   const directives = [
     "default-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
     "frame-ancestors 'self'",
     `form-action 'self' https://checkout.stripe.com https://billing.stripe.com`,
-    `frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://billing.stripe.com https://connect.stripe.com`,
-    `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://*.stripe.com ${posthog}`,
+    `frame-src ${frameSrc}`,
+    `script-src 'self' 'unsafe-inline' 'unsafe-eval'${scriptSrcExtras} https://js.stripe.com https://*.stripe.com ${posthog}`,
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob: https:`,
     `font-src 'self' data:`,
@@ -37,7 +44,9 @@ export function contentSecurityPolicyDirectives(): string {
   return directives.join("; ");
 }
 
-export function baselineSecurityHeaders(): ResponseHeader[] {
+export type BaselineSecurityOptions = { payloadAdmin?: boolean };
+
+function staticSecurityHeaders(): ResponseHeader[] {
   const headers: ResponseHeader[] = [
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -56,28 +65,55 @@ export function baselineSecurityHeaders(): ResponseHeader[] {
     });
   }
 
-  const csp = contentSecurityPolicyDirectives();
-  if (process.env.SECURITY_CSP_ENFORCE === "true") {
-    headers.push({ key: "Content-Security-Policy", value: csp });
-  } else if (process.env.SECURITY_CSP_REPORT_ONLY === "true") {
-    headers.push({
-      key: "Content-Security-Policy-Report-Only",
-      value: csp,
-    });
-  }
-
   return headers;
 }
 
-/** Next.js `headers()` export shape — single catch-all route. */
+/** CSP / CSP-Report-Only entries only (for merging with static headers and route overrides). */
+export function cspSecurityHeaders(
+  options: BaselineSecurityOptions = {},
+): ResponseHeader[] {
+  const csp = contentSecurityPolicyDirectives(options);
+  if (process.env.SECURITY_CSP_ENFORCE === "true") {
+    return [{ key: "Content-Security-Policy", value: csp }];
+  }
+  if (process.env.SECURITY_CSP_REPORT_ONLY === "true") {
+    return [
+      {
+        key: "Content-Security-Policy-Report-Only",
+        value: csp,
+      },
+    ];
+  }
+  return [];
+}
+
+export function baselineSecurityHeaders(
+  options: BaselineSecurityOptions = {},
+): ResponseHeader[] {
+  return [...staticSecurityHeaders(), ...cspSecurityHeaders(options)];
+}
+
+/**
+ * Next.js `headers()` export shape. Global `/:path*` sets static headers + default CSP.
+ * `/admin/:path*` adds **only** a Payload-oriented CSP so merged responses override the global
+ * `Content-Security-Policy` for admin (same static headers, no duplication).
+ */
 export function securityHeadersConfig(): {
   source: string;
   headers: ResponseHeader[];
 }[] {
-  return [
-    {
-      source: "/:path*",
-      headers: baselineSecurityHeaders(),
-    },
+  const base = [...staticSecurityHeaders(), ...cspSecurityHeaders({})];
+  const out: { source: string; headers: ResponseHeader[] }[] = [
+    { source: "/:path*", headers: base },
   ];
+  if (
+    process.env.SECURITY_CSP_ENFORCE === "true" ||
+    process.env.SECURITY_CSP_REPORT_ONLY === "true"
+  ) {
+    out.push({
+      source: "/admin/:path*",
+      headers: cspSecurityHeaders({ payloadAdmin: true }),
+    });
+  }
+  return out;
 }

@@ -1,6 +1,6 @@
 # Phase 12 — Production hardening, onboarding polish, and deferred extras
 
-**Status:** **planned** — specification for work after Phase 11; checkboxes below track execution (do not assume complete until marked).
+**Status:** **implemented (code + docs)** — staging promotion of CSP/HSTS and final smoke tests remain **operator-run** (see [`docs/runbooks/staging-checklist.md`](../runbooks/staging-checklist.md)).
 
 Maps cross-cutting **production readiness** (security headers, CSP rollout, Sentry, operator runbooks), **developer-facing onboarding** (README + marketing alignment), **UX polish** (skeletons, email templates), and **optional product/test debt** called out in earlier phases.
 
@@ -30,16 +30,17 @@ Outcome: conservative security headers, phased CSP, optional error monitoring, e
 | Track | Deliverables | Notes |
 |--------|----------------|-------|
 | Headers | `next.config.ts` `headers()` composed with Payload + optional Sentry wrapper | Baseline: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, framing policy; **HSTS** only when explicitly enabled for real HTTPS hosts |
-| CSP | Report-only first (`Content-Security-Policy-Report-Only`), then enforcing — env-gated | Allowlist matrix for Stripe, PostHog, Better Auth, Payload `/admin` tradeoffs — [`docs/runbooks/csp-matrix.md`](../runbooks/csp-matrix.md) |
-| Sentry | `@sentry/nextjs`, client/server/edge configs, `instrumentation.ts`, scrubbing / webhook hygiene | `SENTRY_*` / `NEXT_PUBLIC_SENTRY_*` in `.env.example`; optional tunnel route for ad blockers |
+| CSP | Report-only first (`Content-Security-Policy-Report-Only`), then enforcing — env-gated | Allowlist matrix for Stripe, PostHog, Better Auth, Payload `/admin` tradeoffs — [`docs/runbooks/csp-matrix.md`](../runbooks/csp-matrix.md); **`/admin/:path*` CSP override** in [`src/lib/security/http-headers.ts`](../../src/lib/security/http-headers.ts) |
+| Sentry | `@sentry/nextjs`, client/server/edge configs, `instrumentation.ts`, scrubbing / webhook hygiene | `SENTRY_*` / `NEXT_PUBLIC_SENTRY_*` in `.env.example`; optional tunnel route for ad blockers; unit tests in [`src/lib/sentry/options.test.ts`](../../src/lib/sentry/options.test.ts) |
 | Runbooks | Stripe, Svix, Redis/limits, PostHog + staging smoke | [`docs/runbooks/README.md`](../runbooks/README.md); README “Production operations” link |
 
 **Checklist**
 
-- [ ] Headers + HSTS policy documented per environment (no accidental HSTS on HTTP preview).
-- [ ] CSP: report-only validated in staging → enforcing promoted when violations are understood (especially `/admin`).
-- [ ] Sentry: DSN optional; PII scrubbing and webhook route exclusions verified per staging checklist.
-- [ ] Runbooks kept in sync with `.env.example` key names (no secrets in docs).
+- [x] Headers + HSTS policy documented per environment (no accidental HSTS on HTTP preview).
+- [x] CSP: **code** — report-only + enforce env-gates, `/admin/:path*` override, [`csp-matrix.md`](../runbooks/csp-matrix.md) (operator still runs staging → enforce promotion).
+- [ ] CSP: **staging** — report-only validated, violations triaged, enforcing promoted when ready (especially `/admin`) — [`staging-checklist.md`](../runbooks/staging-checklist.md).
+- [x] Sentry: DSN optional; PII scrubbing and webhook route exclusions covered by tests + [`staging-checklist.md`](../runbooks/staging-checklist.md).
+- [x] Runbooks kept in sync with `.env.example` key names (no secrets in docs).
 
 ---
 
@@ -49,15 +50,15 @@ These items were called out earlier as **optional**; Phase 12 tracks them explic
 
 | Item | Goal | Notes |
 |------|------|--------|
-| **`GET/POST /api/invitations/accept`** (or equivalent HTTP surface) | Allow invitation acceptance via consistent API contract where UI/server actions are not enough | Align with existing invitation flows and auth cookies; document in README when added |
-| **Full SAML IdP matrix smoke** | Confidence across common IdPs (Okta, Entra, generic SAML), not only happy-path E2E | Extend Playwright or integration coverage per [`phase-09-sso-saml.md`](phase-09-sso-saml.md) |
-| **Deeper `proxy.ts` verification vs layout-only auth** | Ensure proxy/session/org guards match what layouts assume — no drift between middleware-style gate and RSC boundaries | Consider unit tests on extracted decision helpers + selective integration tests |
+| **`GET/POST /api/invitations/accept`** (or equivalent HTTP surface) | Allow invitation acceptance via consistent API contract where UI/server actions are not enough | [`src/app/api/invitations/accept/route.ts`](../../src/app/api/invitations/accept/route.ts); [`tests/integration/invitations-accept-route.test.ts`](../../tests/integration/invitations-accept-route.test.ts); README |
+| **Full SAML IdP matrix smoke** | Confidence across common IdPs (Okta, Entra, generic SAML), not only happy-path E2E | [`docs/runbooks/saml-idp-matrix.md`](../runbooks/saml-idp-matrix.md); automated nightly remains optional |
+| **Deeper `proxy.ts` verification vs layout-only auth** | Ensure proxy/session/org guards match what layouts assume — no drift between middleware-style gate and RSC boundaries | [`docs/runbooks/route-guards-matrix.md`](../runbooks/route-guards-matrix.md); [`src/lib/proxy-guards.test.ts`](../../src/lib/proxy-guards.test.ts) |
 
 **Checklist**
 
-- [ ] HTTP invitation accept route (if pursued): OpenAPI or README contract + tests.
-- [ ] SAML: documented IdP matrix + automated smoke subset (optional nightly).
-- [ ] Proxy vs layout: documented matrix of which routes use which guard; tests for regressions.
+- [x] HTTP invitation accept route: README contract + integration tests.
+- [x] SAML: documented IdP matrix + automated smoke subset (optional nightly).
+- [x] Proxy vs layout: documented matrix of which routes use which guard; regression tests for pure helpers.
 
 ---
 
@@ -67,10 +68,10 @@ Outcome: every significant route shows a **loading UI that mirrors the final lay
 
 **Scope (iterate until major surfaces covered)**
 
-- [ ] Marketing/public routes (`/`, `/pricing`, `/features`, `/blog`, legal).
-- [ ] Auth flows (`/sign-in`, `/sign-up`, account/settings).
-- [ ] Org hub: dashboard, org settings subtabs (general, team, billing, webhooks, SSO, audit logs, usage, permissions).
-- [ ] Payload admin entry if custom loading wrappers apply.
+- [x] Marketing/public routes (`/`, `/pricing`, `/features`, `/blog`, `/contact`, changelog, legal) — segment `loading.tsx` files + shared skeleton components under `src/components/loading/`.
+- [x] Auth flows (`/sign-in`, `/sign-up`, account/settings) — `(auth)/(guest)/loading.tsx`, `account/loading.tsx`.
+- [x] Org hub: dashboard, org settings subtabs — `organizations/loading.tsx`, `[orgSlug]/loading.tsx`, `settings/loading.tsx`, `invite/.../loading.tsx`.
+- [ ] Payload admin entry — do not hand-edit `(payload)` tree per [`AGENTS.md`](../../AGENTS.md); **not done** (optional; no `loading.tsx` added — follow Payload-supported patterns only).
 
 **Acceptance:** Side-by-side snapshot or quick video optional; minimally: structure (grid columns, nav regions) matches the loaded page component layout.
 
@@ -80,10 +81,10 @@ Outcome: every significant route shows a **loading UI that mirrors the final lay
 
 Outcome: transactional mail feels **intentional** — typography, spacing, brand placeholder, clear CTA — without locking to one brand.
 
-- [ ] Audit templates under [`src/lib/email/templates`](../../src/lib/email/templates) (and related render paths).
-- [ ] Shared layout partial (header/footer, primary button style, muted legal line).
-- [ ] Dark-mode safe contrast; test in common clients (Gmail/Apple Mail) as feasible.
-- [ ] README pointer: how to preview (`pnpm email:dev` or documented command).
+- [x] Audit templates under [`src/lib/email/templates`](../../src/lib/email/templates) (and related render paths).
+- [x] Shared layout partial (header/footer, primary button style, muted legal line) — [`src/lib/email/transactional-layout.tsx`](../../src/lib/email/transactional-layout.tsx).
+- [x] Dark-mode safe contrast; test in common clients (Gmail/Apple Mail) as feasible — high-contrast neutrals on white card.
+- [x] README pointer — `pnpm email:dev` in Start here + Testing table.
 
 ---
 
@@ -101,9 +102,10 @@ Suggested structure (adapt to repo truth):
 
 **Checklist**
 
-- [ ] Feature list with rationale (not just feature names).
-- [ ] Clear “start here” vs “advanced” sections.
-- [ ] Cross-links to phase docs for deep dives.
+- [x] Feature list with rationale (not just feature names).
+- [x] Clear “start here” vs “advanced” sections.
+- [x] Cross-links to phase docs for deep dives.
+- [x] **Deployment** — full Docker (`docker-compose.*`, ops you add) vs **Vercel + third-party accounts** (Postgres, Redis/Upstash, S3/SMTP, Stripe, Svix, etc.) in [`README.md`](../../README.md).
 
 ---
 
@@ -111,19 +113,27 @@ Suggested structure (adapt to repo truth):
 
 Outcome: public marketing reflects **this repo as a blank SaaS starter**, aligned with README — not a fictional product.
 
-- [ ] Homepage hero and sections map to **actual capabilities** (tenant model, auth, billing readiness, webhooks, admin CMS, observability hooks).
-- [ ] `/features` (or equivalent) mirrors README feature table where possible (single source of truth: prefer README driving copy or shared content module later).
-- [ ] `/pricing` frames starter tiers as **examples** or “bring your own Stripe prices” so expectations stay honest.
-- [ ] CTA points to docs/GitHub/sign-up consistent with starter positioning.
+- [x] Homepage hero and sections map to **actual capabilities** (tenant model, auth, billing readiness, webhooks, admin CMS, observability hooks).
+- [x] `/features` mirrors README intent (pointer + expanded pillars); shared content module deferred.
+- [x] `/pricing` frames starter tiers as **examples** / BYO Stripe prices.
+- [x] CTA points sign-up / dashboard consistent with starter positioning.
+- [x] **Contact** — `/contact` page, `POST /api/contact`, nav/footer links, homepage strip; `CONTACT_INBOX` / SMTP documented in [`.env.example`](../../.env.example).
 
 ---
 
 ## Verification (phase exit)
 
+Run [`docs/runbooks/staging-checklist.md`](../runbooks/staging-checklist.md) before production CSP enforce + HSTS.
+
+**Operator-run (not automated in this repo):**
+
 - [ ] Staging smoke: marketing loads, sign-in, Stripe/portal paths compatible with CSP when enforcing.
 - [ ] Payload `/admin` smoke after CSP tightening.
 - [ ] Optional: forced server error with Sentry enabled shows scrubbed payload (if Sentry used).
-- [ ] README + marketing reviewed together so **no contradictory claims**.
+
+**Done in-repo:**
+
+- [x] README + marketing reviewed together so **no contradictory claims** (copy aligned in this pass).
 
 ---
 
@@ -136,6 +146,7 @@ src/instrumentation.ts
 sentry.client.config.ts
 sentry.server.config.ts
 sentry.edge.config.ts
+src/app/api/contact/route.ts
 docs/runbooks/
 src/app/(frontend)/           # marketing + product shells
 src/lib/email/templates/
@@ -146,4 +157,4 @@ README.md
 
 ## Phase reference index
 
-Prior: [phase-11-docker-tests-readme.md](phase-11-docker-tests-readme.md). Return to [README.md](../../README.md) for repository overview; add Phase 12 to any master phase table when that index is next updated.
+Prior: [phase-11-docker-tests-readme.md](phase-11-docker-tests-readme.md). Return to [README.md](../../README.md) for repository overview; phase index: [`docs/prd-v4-phases/README.md`](README.md).
