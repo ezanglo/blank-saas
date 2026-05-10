@@ -31,6 +31,8 @@ import { createOrganizationAction } from "@/lib/actions/organization";
 import { queryKeys } from "@/lib/query/keys";
 import { useQueryClient } from "@tanstack/react-query";
 
+let createOrgAutoSlugSeq = 0;
+
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
   slug: z.string().optional(),
@@ -65,7 +67,7 @@ export function CreateOrganizationDialog({
     const slug =
       slugRaw ||
       slugify(name, { lower: true, strict: true }) ||
-      slugify(Math.random().toString(36).slice(2, 8), { lower: true, strict: true });
+      slugify(`ws-${++createOrgAutoSlugSeq}`, { lower: true, strict: true });
     try {
       const org = (await createOrganizationAction({
         name,

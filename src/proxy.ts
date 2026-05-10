@@ -12,28 +12,9 @@ import {
   isProtectedProductPath,
   sessionActiveOrg,
 } from "@/lib/proxy-guards";
+import { clientIp, mergeResponseHeaders } from "@/lib/proxy/request-meta";
 import { workspaceHomePath } from "@/lib/org/workspace-home";
 import * as schema from "@/payload-generated-schema";
-
-function clientIp(request: NextRequest) {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown"
-  );
-}
-
-function mergeResponseHeaders(res: NextResponse, extra: Headers | undefined) {
-  if (!extra) return res;
-  extra.forEach((value, key) => {
-    if (key.toLowerCase() === "set-cookie") {
-      res.headers.append(key, value);
-    } else {
-      res.headers.set(key, value);
-    }
-  });
-  return res;
-}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

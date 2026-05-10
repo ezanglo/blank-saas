@@ -1722,6 +1722,8 @@ Implement in this sequence to avoid dependency issues:
 27. **Tests** — Playwright config, fixtures, all spec files including `billing.spec.ts`, `sso.spec.ts`, `permissions.spec.ts`.
 28. **README** — Full setup guide (see Section 27).
 
+**Repo status:** Expanded phase checklist and “done” markers live under [`docs/prd-v4-phases/README.md`](docs/prd-v4-phases/README.md). **Phase 11** — Docker (`docker-compose.yml`, `docker-compose.dev.yml`, optional `docker-compose.docker-app.yml` / `pnpm docker:app`), **`Dockerfile`**, Playwright + Vitest, `.github/workflows/ci.yml`, README / `.env.example` — is **complete**; details in [`docs/prd-v4-phases/phase-11-docker-tests-readme.md`](docs/prd-v4-phases/phase-11-docker-tests-readme.md).
+
 ---
 
 ## 27. README Requirements

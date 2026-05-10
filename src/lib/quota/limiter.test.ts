@@ -24,21 +24,23 @@ describe("apiRateLimiter", () => {
     NODE_ENV: process.env.NODE_ENV,
   };
 
+  const patchEnv = process.env as Record<string, string | undefined>;
+
   afterEach(() => {
-    process.env.REDIS_URL = saved.REDIS_URL;
-    process.env.UPSTASH_REDIS_REST_URL = saved.UPSTASH_REDIS_REST_URL;
-    process.env.UPSTASH_REDIS_REST_TOKEN = saved.UPSTASH_REDIS_REST_TOKEN;
-    process.env.API_RATE_LIMIT_PER_MINUTE = saved.API_RATE_LIMIT_PER_MINUTE;
-    process.env.NODE_ENV = saved.NODE_ENV;
+    patchEnv.REDIS_URL = saved.REDIS_URL;
+    patchEnv.UPSTASH_REDIS_REST_URL = saved.UPSTASH_REDIS_REST_URL;
+    patchEnv.UPSTASH_REDIS_REST_TOKEN = saved.UPSTASH_REDIS_REST_TOKEN;
+    patchEnv.API_RATE_LIMIT_PER_MINUTE = saved.API_RATE_LIMIT_PER_MINUTE;
+    patchEnv.NODE_ENV = saved.NODE_ENV;
   });
 
   describe("without Redis / Upstash", () => {
     beforeEach(() => {
       vi.resetModules();
-      delete process.env.REDIS_URL;
-      delete process.env.UPSTASH_REDIS_REST_URL;
-      delete process.env.UPSTASH_REDIS_REST_TOKEN;
-      process.env.NODE_ENV = "test";
+      delete patchEnv.REDIS_URL;
+      delete patchEnv.UPSTASH_REDIS_REST_URL;
+      delete patchEnv.UPSTASH_REDIS_REST_TOKEN;
+      patchEnv.NODE_ENV = "test";
     });
 
     it("allows every request (no-op limiter)", async () => {
@@ -54,11 +56,11 @@ describe("apiRateLimiter", () => {
     beforeEach(() => {
       vi.resetModules();
       redisIncrState.n = 0;
-      delete process.env.UPSTASH_REDIS_REST_URL;
-      delete process.env.UPSTASH_REDIS_REST_TOKEN;
-      process.env.REDIS_URL = "redis://127.0.0.1:6379";
-      process.env.API_RATE_LIMIT_PER_MINUTE = "2";
-      process.env.NODE_ENV = "test";
+      delete patchEnv.UPSTASH_REDIS_REST_URL;
+      delete patchEnv.UPSTASH_REDIS_REST_TOKEN;
+      patchEnv.REDIS_URL = "redis://127.0.0.1:6379";
+      patchEnv.API_RATE_LIMIT_PER_MINUTE = "2";
+      patchEnv.NODE_ENV = "test";
     });
 
     it("allows until count exceeds API_RATE_LIMIT_PER_MINUTE in the same window", async () => {

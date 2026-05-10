@@ -1,0 +1,84 @@
+# Production-oriented dependency stack (Phase 11 / PRD §24.1).
+# Run the Next app on the host, or use [`docker-compose.docker-app.yml`](docker-compose.docker-app.yml) locally with deps + `web`.
+#
+#   docker compose up -d
+# Jackson (optional legacy SAML sidecar):
+#   docker compose --profile jackson up -d
+#
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-blank_saas}
+    volumes:
+      - blank_saas_pg:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-blank_saas}",
+        ]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  svix:
+    image: svix/svix-server:latest
+    restart: unless-stopped
+    ports:
+      - "${SVIX_PORT:-8071}:8071"
+    environment:
+      WAIT_FOR: "true"
+      SVIX_REDIS_DSN: redis://redis:6379
+      SVIX_DB_DSN: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/svix
+      SVIX_JWT_SECRET: ${SVIX_JWT_SECRET:-dev-svix-jwt-secret-change-me}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  jackson:
+    profiles: ["jackson"]
+    image: boxyhq/jackson:latest
+    restart: unless-stopped
+    ports:
+      - "${JACKSON_PORT:-5225}:5225"
+    environment:
+      DB_ENGINE: sql
+      DB_TYPE: postgres
+      DB_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-blank_saas}
+      DB_SSL: "false"
+      HOST: "0.0.0.0"
+      PORT: "5225"
+      NEXTAUTH_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-change-me}
+      JACKSON_API_KEY: ${JACKSON_API_KEY:-dev-jackson-api-key}
+      PRODUCT: ${JACKSON_PRODUCT:-starter}
+      SAML_AUDIENCE: ${SAML_AUDIENCE:-http://localhost:5225}
+      PUBLIC_HOST_URL: ${JACKSON_PUBLIC_HOST_URL:-http://localhost:5225}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  blank_saas_pg:

@@ -1,5 +1,7 @@
 # Phase 11 — Docker, Playwright, unit/API tests, README, polish
 
+**Status:** **complete** — Docker + Vitest + Playwright + CI + README + `.env.example` parity are in repo; expand unit/integration depth incrementally per phase docs as features grow.
+
 Maps to **Phase 11** and PRD **§24**, **§23**, **§27**, **§10**, **§26** steps **21, 26–28**, plus **repo conventions for unit and API/integration tests** (PRD §23 is E2E-only; this file extends it).
 
 ## Purpose
@@ -38,18 +40,18 @@ tests/integration/      # Vitest + fetch / Payload local API / test DB
 
 **E2E (PRD §23)**
 
-- [ ] `playwright.config.ts` §23.1; `tests/fixtures/` §23.3.
-- [ ] Spec files: `auth`, `organizations`, `members`, `invitations`, `marketing`, `audit-logs`, `webhooks`, `quota`, `billing`, `permissions` §23.2.
-- [x] `sso` smoke — [`tests/e2e/sso.spec.ts`](../../tests/e2e/sso.spec.ts) (`pnpm test:e2e`).
-- [ ] `pnpm run test` (or `test:e2e`) runs Playwright in CI-like env.
+- [x] `playwright.config.ts` §23.1; `tests/fixtures/` §23.3.
+- [x] Spec files §23.2 — [`tests/e2e/`](../../tests/e2e/) (`auth`, `marketing`, `organizations`, `members`, `invitations`, `audit-logs`, `webhooks`, `quota`, `billing`, `permissions`, `sso`).
+- [x] `sso` — [`tests/e2e/sso.spec.ts`](../../tests/e2e/sso.spec.ts) (`pnpm test:e2e`).
+- [x] `pnpm test:e2e` runs in CI ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)) with Postgres service + migrate.
 
 **Unit + API/integration (repo extension)**
 
 - [x] `vitest.config.ts` at repo root; `pnpm run test:unit` / `pnpm run test:unit:watch` ([`vitest.config.ts`](../../vitest.config.ts)).
-- [ ] `pnpm run test:integration` (SSO actions landed under [`tests/integration/sso-actions.test.ts`](../../tests/integration/sso-actions.test.ts); expand Phase 11 for CI wiring).
-- [ ] Unit tests for high-risk **rules**: `src/lib/quota/**`, permission helpers, extracted proxy decision logic, shared Zod schemas.
-- [ ] Integration tests for **server boundaries**: critical `src/app/api/**` handlers, selected server actions under `src/lib/actions/**`, Payload operations that enforce multi-tenant rules (use test `DATABASE_URL` / migrations in CI).
-- [ ] CI workflow runs: **lint**, **typecheck**, **`test:unit`**, **`test:integration`** (with services), **`test:e2e`** (optional parallel job after app + DB up).
+- [x] `pnpm run test:integration` — [`tests/integration/`](../../tests/integration/) (e.g. SSO + permissions actions); runs in CI with migrated DB env.
+- [x] Baseline unit coverage colocated as `src/**/*.test.ts` (quota/limiter, guards, schemas, etc.) — expand per phase checklists as surfaces grow.
+- [ ] Deeper integration against **`src/app/api/**`** and more server actions (incremental; patterns established above).
+- [x] CI workflow runs **lint**, **typecheck**, **`test:unit`**, **`test:integration`**, **`test:e2e`** (e2e job after verify).
 
 ## PRD map
 
@@ -67,33 +69,34 @@ tests/integration/      # Vitest + fetch / Payload local API / test DB
 
 ## Deliverables (checklist — infra + polish)
 
-- [ ] `docker-compose.yml` + `docker-compose.dev.yml` — postgres, redis, svix, jackson, posthog; dev adds **mailhog**, **minio** §24.1–24.2.
-- [ ] `Dockerfile` multistage §24.3 — verify Payload/`public`/`.next` copy for chosen Payload version.
-- [ ] `.env.example` mirroring §24.4 + comments for Svix JWT bootstrap §27.
-- [ ] Global `error.tsx`, `not-found.tsx`, dashboard 403 pattern §10.2–10.3.
-- [ ] README §27: one-command dev, migration order, MailHog/MinIO/Svix/Stripe/PostHog/Jackson notes, deployment checklist, **and a “Testing” subsection** (unit / integration / E2E commands).
+- [x] `docker-compose.yml` + `docker-compose.dev.yml` — Postgres, Redis, Svix; optional **Jackson** (`--profile jackson`); dev adds **MailHog**, **MinIO** §24.1–24.2 (PostHog: Cloud / self-host per README, not bundled).
+- [x] `Dockerfile` multistage §24.3 + optional **`docker-compose.docker-app.yml`** / **`pnpm docker:app`** for production-like **`next start`** locally.
+- [x] `.env.example` mirroring §24.4 + Svix / Compose notes §27.
+- [x] Global `(frontend)` error boundaries — `src/app/(frontend)/error.tsx`, `src/app/(frontend)/not-found.tsx`; org hub surfaces forbidden query param §10.
+- [x] README §27-style quick start: Compose, migrations, MailHog/MinIO/Svix/Stripe/PostHog/Jackson, **Testing** table (lint / typecheck / unit / integration / E2E).
 
 ## Key paths (expected)
 
 ```
 docker-compose.yml
 docker-compose.dev.yml
+docker-compose.docker-app.yml   # optional: deps + web (next start)
 Dockerfile
 .env.example
 playwright.config.ts
 vitest.config.ts
+scripts/docker-app-up.sh
 tests/e2e/
 tests/fixtures/
-tests/unit/
 tests/integration/
 README.md
 ```
 
 ## Verification
 
-- `docker compose -f docker-compose.dev.yml up` brings full dev stack §27.
-- `pnpm run test` (or `test:e2e`) passes for Playwright.
-- `pnpm run test:unit` and `pnpm run test:integration` pass in CI with documented env.
+- `docker compose -f docker-compose.dev.yml up -d` brings dev deps §27; optional `pnpm docker:app` runs **`next start`** in Docker.
+- `pnpm test:e2e` passes locally / in CI (with migrate + Postgres).
+- `pnpm test:unit` and `pnpm test:integration` pass in CI with documented env.
 - New contributor can boot from README only.
 
 ## Svix environment (Phase 6)

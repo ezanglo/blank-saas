@@ -11,6 +11,7 @@ describe("resolveStripePricesFromEnv", () => {
   it("throws when any STRIPE_PRICE_* is missing", () => {
     expect(() =>
       resolveStripePricesFromEnv({
+        NODE_ENV: "test" as const,
         STRIPE_PRICE_PRO_MONTHLY: "price_m",
         STRIPE_PRICE_PRO_YEARLY: "",
         STRIPE_PRICE_ENTERPRISE_MONTHLY: "price_e",
@@ -20,6 +21,7 @@ describe("resolveStripePricesFromEnv", () => {
 
   it("returns structured prices when all set", () => {
     const env = {
+      NODE_ENV: "test" as const,
       STRIPE_PRICE_PRO_MONTHLY: "price_pro_m",
       STRIPE_PRICE_PRO_YEARLY: "price_pro_y",
       STRIPE_PRICE_ENTERPRISE_MONTHLY: "price_ent_m",
@@ -35,6 +37,7 @@ describe("tryResolveStripePricesFromEnv", () => {
   it("returns null when any STRIPE_PRICE_* is missing", () => {
     expect(
       tryResolveStripePricesFromEnv({
+        NODE_ENV: "test" as const,
         STRIPE_PRICE_PRO_MONTHLY: "price_m",
         STRIPE_PRICE_PRO_YEARLY: "",
         STRIPE_PRICE_ENTERPRISE_MONTHLY: "price_e",
@@ -44,6 +47,7 @@ describe("tryResolveStripePricesFromEnv", () => {
 
   it("returns same shape as resolve when all set", () => {
     const env = {
+      NODE_ENV: "test" as const,
       STRIPE_PRICE_PRO_MONTHLY: "price_pro_m",
       STRIPE_PRICE_PRO_YEARLY: "price_pro_y",
       STRIPE_PRICE_ENTERPRISE_MONTHLY: "price_ent_m",

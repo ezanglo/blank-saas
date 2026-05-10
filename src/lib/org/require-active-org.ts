@@ -14,7 +14,7 @@ export async function requireActiveOrgContext() {
   const session = await auth.api.getSession({ headers: headersToWebRequestHeaders(h) });
   if (!session?.user?.id) redirect("/sign-in");
 
-  let orgId = activeOrganizationIdFromSession(session);
+  const orgId = activeOrganizationIdFromSession(session);
   if (!orgId) {
     redirect(
       await workspaceHomePath({

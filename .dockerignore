@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+.env*
+!.env.example
+coverage
+playwright-report
+test-results
+.turbo
+.cursor
+.vercel
+**/*.test.ts
+**/*.spec.ts
+tests/e2e
+tests/fixtures

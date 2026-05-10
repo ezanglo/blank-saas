@@ -1,0 +1,60 @@
+# Full local stack: docker-compose.dev.yml deps + Next.js production mode (`next start`).
+#
+# `next build` needs a live Postgres URL. Start Postgres first, then build — use:
+#   pnpm docker:app
+# or manually:
+#   docker compose -f docker-compose.dev.yml up -d postgres redis mailhog minio svix
+#   docker compose --env-file .env.local -f docker-compose.docker-app.yml build web
+#   docker compose --env-file .env.local -f docker-compose.docker-app.yml up -d web
+#
+# Root `.env` supplies POSTGRES_PORT etc. for deps; `.env.local` supplies app secrets.
+# Set DATABASE_URL_BUILD to match Postgres on the host (host.docker.internal + POSTGRES_PORT).
+
+include:
+  - path: docker-compose.dev.yml
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+      args:
+        DATABASE_URL: ${DATABASE_URL_BUILD:-postgresql://postgres:postgres@host.docker.internal:5432/blank_saas}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+        NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}
+        NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-}
+        NEXT_PUBLIC_FEATURE_GRANULAR_PERMISSIONS: ${NEXT_PUBLIC_FEATURE_GRANULAR_PERMISSIONS:-}
+        SITE_URL: ${SITE_URL:-}
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/blank_saas
+      REDIS_URL: redis://redis:6379
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      SMTP_SECURE: "false"
+      BETTER_AUTH_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      SVIX_SERVER_URL: http://svix:8071
+      S3_ENDPOINT: http://minio:9000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      svix:
+        condition: service_started
+      mailhog:
+        condition: service_started
+      minio:
+        condition: service_started
+    restart: unless-stopped
+    command:
+      - sh
+      - -c
+      - "node node_modules/payload/bin.js migrate && exec node node_modules/next/dist/bin/next start -H 0.0.0.0 -p 3000"

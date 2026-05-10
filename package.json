@@ -12,9 +12,11 @@
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "payload": "payload",
     "migrate": "payload migrate",
     "migrate:create": "payload migrate:create",
+    "docker:app": "sh scripts/docker-app-up.sh",
     "generate:types": "payload generate:types",
     "generate:db-schema": "payload generate:db-schema",
     "generate:importmap": "payload generate:importmap",
@@ -23,7 +25,8 @@
     "test:unit:watch": "vitest src",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test": "pnpm test:e2e"
   },
   "dependencies": {
     "@better-auth/sso": "^1.6.10",
