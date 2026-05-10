@@ -48,9 +48,10 @@ tests/integration/      # Vitest + fetch / Payload local API / test DB
 **Unit + API/integration (repo extension)**
 
 - [x] `vitest.config.ts` at repo root; `pnpm run test:unit` / `pnpm run test:unit:watch` ([`vitest.config.ts`](../../vitest.config.ts)).
-- [x] `pnpm run test:integration` — [`tests/integration/`](../../tests/integration/) (e.g. SSO + permissions actions); runs in CI with migrated DB env.
+- [x] `pnpm run test:integration` — [`tests/integration/`](../../tests/integration/) (`sso-actions`, `permissions-actions`, **`org-api-routes`**, **`member-invite-action`**); runs in CI with migrated DB env.
 - [x] Baseline unit coverage colocated as `src/**/*.test.ts` (quota/limiter, guards, schemas, etc.) — expand per phase checklists as surfaces grow.
-- [ ] Deeper integration against **`src/app/api/**`** and more server actions (incremental; patterns established above).
+- [x] **HTTP handlers:** besides workflow-focused [`tests/integration/`](../../tests/integration/), selected **`src/app/api/**`** routes use **colocated** `route.test.ts` (for example `src/app/api/orgs/[orgId]/usage/route.test.ts`, Stripe and Svix webhook routes).
+- [ ] Optional next waves: more **`src/app/api/**`** routes + server actions under [`tests/integration/`](../../tests/integration/) when a surface stabilizes or regressions repeat.
 - [x] CI workflow runs **lint**, **typecheck**, **`test:unit`**, **`test:integration`**, **`test:e2e`** (e2e job after verify).
 
 ## PRD map
