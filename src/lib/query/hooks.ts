@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { authApiUrl } from "@/lib/auth/app-url";
 import { authClient } from "@/lib/auth-client";
 
 import { queryKeys } from "./keys";
@@ -20,15 +21,10 @@ export function useSessionQuery() {
 
 /** Lists organizations for the signed-in user (`GET /api/auth/organization/list`). */
 export function useOrganizations() {
-  const base =
-    process.env.NEXT_PUBLIC_BETTER_AUTH_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "";
-
   return useQuery({
     queryKey: queryKeys.organizations.list(),
     queryFn: async () => {
-      const url = `${base.replace(/\/$/, "")}/api/auth/organization/list`;
+      const url = authApiUrl("/organization/list");
       const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load organizations");
       return res.json() as Promise<
@@ -38,33 +34,61 @@ export function useOrganizations() {
   });
 }
 
+export type OrganizationMemberRow = {
+  id: string;
+  userId: string;
+  organizationId: string;
+  role: string;
+  createdAt: string;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    image?: string | null;
+  };
+};
+
 export function useOrganizationMembers(orgId: string | undefined) {
   return useQuery({
     queryKey: orgId ? queryKeys.members.list(orgId) : ["members", "list", "none"],
     queryFn: async () => {
-      if (!orgId) return [];
-      const base =
-        process.env.NEXT_PUBLIC_BETTER_AUTH_URL ??
-        process.env.NEXT_PUBLIC_APP_URL ??
-        "";
-      const root = `${base.replace(/\/$/, "")}/api/auth`;
-      const url = `${root}/organization/list-members?organizationId=${encodeURIComponent(orgId)}`;
+      if (!orgId) return { members: [] as OrganizationMemberRow[], total: 0 };
+      const url = `${authApiUrl("/organization/list-members")}?organizationId=${encodeURIComponent(orgId)}`;
       const res = await fetch(url, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to load members");
-      return res.json();
+      const data = (await res.json()) as {
+        members: OrganizationMemberRow[];
+        total: number;
+      };
+      return data;
     },
     enabled: Boolean(orgId),
   });
 }
 
-/** Wire to invitations API in Phase 5+. */
+export type OrgInvitationRow = {
+  id: string;
+  email: string;
+  role: string;
+  organizationId: string;
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+};
+
 export function useOrgInvitations(orgId: string | undefined) {
   return useQuery({
     queryKey: orgId ? queryKeys.invitations.list(orgId) : ["invitations", "none"],
-    queryFn: () => Promise.resolve([]),
-    enabled: false,
+    queryFn: async () => {
+      if (!orgId) return [] as OrgInvitationRow[];
+      const url = `${authApiUrl("/organization/list-invitations")}?organizationId=${encodeURIComponent(orgId)}`;
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load invitations");
+      return res.json() as Promise<OrgInvitationRow[]>;
+    },
+    enabled: Boolean(orgId),
   });
 }
 

@@ -3,6 +3,14 @@ import { and, eq } from "@payloadcms/db-postgres/drizzle";
 import { db } from "@/lib/db";
 import * as schema from "@/payload-generated-schema";
 
+export class ForbiddenError extends Error {
+  override readonly name = "ForbiddenError";
+
+  constructor(message = "Forbidden") {
+    super(message);
+  }
+}
+
 const rank: Record<string, number> = {
   member: 1,
   admin: 2,
@@ -31,6 +39,6 @@ export async function requireOrgRole(params: {
   const role = await getMemberRole(params.organizationId, params.userId);
   const r = typeof role === "string" ? rank[role] : 0;
   if (r < rank[params.min]) {
-    throw new Error("Forbidden");
+    throw new ForbiddenError();
   }
 }

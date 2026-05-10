@@ -12,6 +12,7 @@ describe("isProtectedProductPath", () => {
     expect(isProtectedProductPath("/organizations/acme")).toBe(true);
     expect(isProtectedProductPath("/account")).toBe(true);
     expect(isProtectedProductPath("/settings/profile")).toBe(true);
+    expect(isProtectedProductPath("/invite/abc")).toBe(true);
   });
 
   it("does not match marketing or auth-only paths", () => {
