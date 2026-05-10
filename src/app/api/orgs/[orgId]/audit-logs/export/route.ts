@@ -15,7 +15,10 @@ export async function GET(
   ctx: { params: Promise<{ orgId: string }> },
 ) {
   const { orgId } = await ctx.params;
-  const gate = await requireOrgAdminSession(orgId);
+  const gate = await requireOrgAdminSession(orgId, {
+    resourceType: "org_audit_logs",
+    action: "export",
+  });
   if (!gate.ok) return gate.response;
 
   const plan = await getOrgPlan(orgId);

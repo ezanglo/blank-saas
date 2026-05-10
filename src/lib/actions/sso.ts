@@ -10,6 +10,7 @@ import { ForbiddenError, getMemberRole } from "@/lib/auth/require-org";
 import { canConfigureSso } from "@/lib/auth/rbac";
 import { fireAndForgetAuditLog } from "@/lib/audit/log";
 import { clientIpFromHeaders, userAgentFromHeaders } from "@/lib/audit/request-context";
+import { assertOrgScopedAccess } from "@/lib/permissions/org-access";
 import { db } from "@/lib/db";
 import * as schema from "@/payload-generated-schema";
 import { orgSsoProviderId } from "@/lib/sso/org-sso-provider-id";
@@ -30,13 +31,20 @@ function appOrigin(): string {
     .trim();
 }
 
-async function requireSsoOwner(organizationId: string) {
+async function requireSsoActor(organizationId: string) {
   const h = await headers();
   const webHeaders = headersToWebRequestHeaders(h);
   const session = await auth.api.getSession({ headers: webHeaders });
   if (!session?.user?.id) throw new ForbiddenError("Not signed in");
   const role = await getMemberRole(organizationId, session.user.id);
-  if (!canConfigureSso(role)) throw new ForbiddenError();
+  await assertOrgScopedAccess({
+    organizationId,
+    userId: session.user.id,
+    userRole: role,
+    rbacAllows: canConfigureSso(role),
+    resourceType: "org_sso",
+    action: "configure",
+  });
   return { session, h, webHeaders };
 }
 
@@ -48,7 +56,7 @@ export async function createOrgSamlConnectionAction(input: {
   metadataXml?: string;
   metadataUrl?: string;
 }) {
-  const { session, h, webHeaders } = await requireSsoOwner(input.organizationId);
+  const { session, h, webHeaders } = await requireSsoActor(input.organizationId);
 
   const normalizedDomain = normalizeEmailDomain(input.domain);
   if (!normalizedDomain) {
@@ -142,7 +150,7 @@ export async function deleteOrgSamlConnectionAction(input: {
   organizationId: string;
   orgSlug: string;
 }) {
-  const { session, h, webHeaders } = await requireSsoOwner(input.organizationId);
+  const { session, h, webHeaders } = await requireSsoActor(input.organizationId);
 
   const [orgRow] = await db
     .select({
@@ -185,7 +193,7 @@ export async function deleteOrgSamlConnectionAction(input: {
 }
 
 export async function loadOrgSamlSummaryForSettings(organizationId: string) {
-  await requireSsoOwner(organizationId);
+  await requireSsoActor(organizationId);
 
   const [orgRow] = await db
     .select({

@@ -131,7 +131,10 @@ export function GrantPermissionDialog({
         <DialogHeader>
           <DialogTitle>Grant permission</DialogTitle>
           <DialogDescription>
-            Grant a member or everyone with an org role access to a specific resource.
+            Grant a member or everyone with an org role access to a resource. For organization settings,
+          choose presets such as <code className="text-xs">org_team</code>,{" "}
+          <code className="text-xs">org_billing</code>, or <code className="text-xs">org_webhooks</code> and use this
+          organization&apos;s id (or <code className="text-xs">*</code>) as resource id.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-4">

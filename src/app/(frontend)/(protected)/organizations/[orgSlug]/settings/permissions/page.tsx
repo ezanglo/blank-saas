@@ -4,6 +4,7 @@ import { OrgPermissionsView } from "@/components/permissions/org-permissions-vie
 import { roleAtLeast } from "@/lib/auth/rbac";
 import { isGranularPermissionsEnabled } from "@/lib/permissions/feature";
 import { listOrgPermissions } from "@/lib/permissions/list";
+import { orgScopedAllows } from "@/lib/permissions/org-access";
 import { requireOrgContextForSlug } from "@/lib/org/require-active-org";
 
 type Props = {
@@ -17,10 +18,19 @@ export default async function OrgSettingsPermissionsPage({ params, searchParams 
   }
 
   const { orgSlug } = await params;
-  const { org, role } = await requireOrgContextForSlug(orgSlug);
+  const { org, role, session } = await requireOrgContextForSlug(orgSlug);
   const sp = await searchParams;
 
-  if (!roleAtLeast(role, "admin")) {
+  const canView = await orgScopedAllows({
+    organizationId: org.id,
+    userId: session.user.id,
+    userRole: role,
+    rbacAllows: roleAtLeast(role, "admin"),
+    resourceType: "org_permissions",
+    action: "read",
+  });
+
+  if (!canView) {
     redirect("/organizations?error=forbidden");
   }
 

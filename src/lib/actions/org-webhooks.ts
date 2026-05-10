@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
 import { ForbiddenError, getMemberRole } from "@/lib/auth/require-org";
 import { roleAtLeast } from "@/lib/auth/rbac";
+import { assertOrgScopedAccess } from "@/lib/permissions/org-access";
 import { db } from "@/lib/db";
 import { getOrgPlan } from "@/lib/org/plan";
 import { checkQuota } from "@/lib/quota/check";
@@ -20,13 +21,23 @@ import { getSvixClient } from "@/lib/webhooks/svix";
 import * as schema from "@/payload-generated-schema";
 import { eq } from "@payloadcms/db-postgres/drizzle";
 
-async function requireOrgWebhookAdmin(organizationId: string) {
+async function requireOrgWebhookActor(
+  organizationId: string,
+  webhookAction: "write" | "delete",
+) {
   const h = await headers();
   const webHeaders = headersToWebRequestHeaders(h);
   const session = await auth.api.getSession({ headers: webHeaders });
   if (!session) throw new ForbiddenError("Not signed in");
   const role = await getMemberRole(organizationId, session.user.id);
-  if (!role || !roleAtLeast(role, "admin")) throw new ForbiddenError();
+  await assertOrgScopedAccess({
+    organizationId,
+    userId: session.user.id,
+    userRole: role,
+    rbacAllows: Boolean(role && roleAtLeast(role, "admin")),
+    resourceType: "org_webhooks",
+    action: webhookAction,
+  });
   return { session, h, webHeaders };
 }
 
@@ -53,7 +64,7 @@ export async function createOrgWebhookEndpointAction(input: {
   url: string;
   filterTypes: string[];
 }) {
-  const { session, h } = await requireOrgWebhookAdmin(input.organizationId);
+  const { session, h } = await requireOrgWebhookActor(input.organizationId, "write");
   const url = input.url.trim();
   if (!url) throw new Error("URL is required");
 
@@ -94,7 +105,7 @@ export async function deleteOrgWebhookEndpointAction(input: {
   orgSlug: string;
   endpointId: string;
 }) {
-  const { session, h } = await requireOrgWebhookAdmin(input.organizationId);
+  const { session, h } = await requireOrgWebhookActor(input.organizationId, "delete");
   const appId = await getSvixAppIdForOrg(input.organizationId);
   if (!appId) throw new Error("No webhook app for this organization.");
 

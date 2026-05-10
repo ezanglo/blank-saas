@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { OrgWebhooksPanel } from "@/components/org/org-webhooks-panel";
 import { roleAtLeast } from "@/lib/auth/rbac";
+import { orgScopedAllows } from "@/lib/permissions/org-access";
 import { requireOrgContextForSlug } from "@/lib/org/require-active-org";
 import { getSvixAppIdForOrg } from "@/lib/webhooks/provision";
 import { getSvixClient, listWebhookEndpoints } from "@/lib/webhooks/svix";
@@ -10,9 +11,18 @@ type Props = { params: Promise<{ orgSlug: string }> };
 
 export default async function OrgSettingsWebhooksPage({ params }: Props) {
   const { orgSlug } = await params;
-  const { org, role } = await requireOrgContextForSlug(orgSlug);
+  const { org, role, session } = await requireOrgContextForSlug(orgSlug);
 
-  if (!roleAtLeast(role, "admin")) {
+  const canAccess = await orgScopedAllows({
+    organizationId: org.id,
+    userId: session.user.id,
+    userRole: role,
+    rbacAllows: roleAtLeast(role, "admin"),
+    resourceType: "org_webhooks",
+    action: "read",
+  });
+
+  if (!canAccess) {
     redirect("/organizations?error=forbidden");
   }
 

@@ -7,16 +7,18 @@ import { cn } from "@/lib/utils";
 
 export function SettingsNav({
   orgSlug,
-  isAdmin,
-  showWebhooks,
-  isOwner,
-  showGranularPermissions,
+  showBillingNav,
+  showAuditLogsNav,
+  showWebhooksNav,
+  showSsoNav,
+  showPermissionsNav,
 }: {
   orgSlug: string;
-  isAdmin: boolean;
-  showWebhooks: boolean;
-  isOwner: boolean;
-  showGranularPermissions: boolean;
+  showBillingNav: boolean;
+  showAuditLogsNav: boolean;
+  showWebhooksNav: boolean;
+  showSsoNav: boolean;
+  showPermissionsNav: boolean;
 }) {
   const pathname = usePathname();
   const base = `/organizations/${orgSlug}/settings`;
@@ -28,17 +30,19 @@ export function SettingsNav({
     { href: `${base}/usage`, label: "Usage" },
   ];
 
-  if (isOwner) {
+  if (showSsoNav) {
     items.push({ href: `${base}/sso`, label: "SSO" });
   }
-  if (isAdmin) {
+  if (showBillingNav) {
     items.push({ href: `${base}/billing`, label: "Billing" });
+  }
+  if (showAuditLogsNav) {
     items.push({ href: `${base}/audit-logs`, label: "Audit logs" });
   }
-  if (isAdmin && showGranularPermissions) {
+  if (showPermissionsNav) {
     items.push({ href: `${base}/permissions`, label: "Permissions" });
   }
-  if (isAdmin && showWebhooks) {
+  if (showWebhooksNav) {
     items.push({ href: `${base}/webhooks`, label: "Webhooks" });
   }
 

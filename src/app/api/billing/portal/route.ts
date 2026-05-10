@@ -10,7 +10,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing orgId" }, { status: 400 });
   }
 
-  const gate = await requireOrgAdminSession(orgId);
+  const gate = await requireOrgAdminSession(orgId, {
+    resourceType: "org_billing",
+    action: "read",
+  });
   if (!gate.ok) return gate.response;
 
   let portalUrl: string;

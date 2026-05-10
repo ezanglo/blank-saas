@@ -4,6 +4,7 @@ import { SettingsNav } from "@/components/settings/settings-nav";
 import { roleAtLeast } from "@/lib/auth/rbac";
 import { resolveWebhooksEnabledFlag } from "@/lib/flags/resolver";
 import { isGranularPermissionsEnabled } from "@/lib/permissions/feature";
+import { orgScopedAllows } from "@/lib/permissions/org-access";
 import { requireOrgContextForSlug } from "@/lib/org/require-active-org";
 
 type Props = {
@@ -13,16 +14,73 @@ type Props = {
 
 export default async function OrgSettingsLayout({ children, params }: Props) {
   const { orgSlug } = await params;
-  const { role } = await requireOrgContextForSlug(orgSlug);
+  const { org, role, session } = await requireOrgContextForSlug(orgSlug);
 
   const isAdmin = roleAtLeast(role, "admin");
-  const showGranularPermissions = isGranularPermissionsEnabled();
-  let showWebhooks = false;
-  if (isAdmin) {
+  const isOwner = role === "owner";
+  const granularFeatureOn = isGranularPermissionsEnabled();
+
+  let showWebhooksFeature = false;
+  if (isAdmin || granularFeatureOn) {
     try {
-      showWebhooks = await resolveWebhooksEnabledFlag();
+      showWebhooksFeature = await resolveWebhooksEnabledFlag();
     } catch {
-      showWebhooks = true;
+      showWebhooksFeature = true;
+    }
+  }
+
+  let showBillingNav = isAdmin;
+  let showAuditLogsNav = isAdmin;
+  let showWebhooksNav = isAdmin && showWebhooksFeature;
+  let showSsoNav = isOwner;
+  let showPermissionsNav = isAdmin && granularFeatureOn;
+
+  if (granularFeatureOn) {
+    const granBase = {
+      organizationId: org.id,
+      userId: session.user.id,
+      userRole: role,
+    };
+    if (!showBillingNav) {
+      showBillingNav = await orgScopedAllows({
+        ...granBase,
+        rbacAllows: false,
+        resourceType: "org_billing",
+        action: "read",
+      });
+    }
+    if (!showAuditLogsNav) {
+      showAuditLogsNav = await orgScopedAllows({
+        ...granBase,
+        rbacAllows: false,
+        resourceType: "org_audit_logs",
+        action: "read",
+      });
+    }
+    if (!showWebhooksNav) {
+      const delegateWebhooks = await orgScopedAllows({
+        ...granBase,
+        rbacAllows: false,
+        resourceType: "org_webhooks",
+        action: "read",
+      });
+      showWebhooksNav = delegateWebhooks && showWebhooksFeature;
+    }
+    if (!showSsoNav) {
+      showSsoNav = await orgScopedAllows({
+        ...granBase,
+        rbacAllows: false,
+        resourceType: "org_sso",
+        action: "configure",
+      });
+    }
+    if (!showPermissionsNav) {
+      showPermissionsNav = await orgScopedAllows({
+        ...granBase,
+        rbacAllows: false,
+        resourceType: "org_permissions",
+        action: "read",
+      });
     }
   }
 
@@ -34,10 +92,11 @@ export default async function OrgSettingsLayout({ children, params }: Props) {
           <div className="flex flex-col gap-4 lg:sticky lg:top-24">
             <SettingsNav
               orgSlug={orgSlug}
-              isAdmin={isAdmin}
-              showWebhooks={showWebhooks}
-              isOwner={role === "owner"}
-              showGranularPermissions={showGranularPermissions}
+              showBillingNav={showBillingNav}
+              showAuditLogsNav={showAuditLogsNav}
+              showWebhooksNav={showWebhooksNav}
+              showSsoNav={showSsoNav}
+              showPermissionsNav={showPermissionsNav}
             />
           </div>
         </aside>

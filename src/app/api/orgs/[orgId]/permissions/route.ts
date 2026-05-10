@@ -13,7 +13,10 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const gate = await requireOrgAdminSession(orgId);
+  const gate = await requireOrgAdminSession(orgId, {
+    resourceType: "org_permissions",
+    action: "read",
+  });
   if (!gate.ok) return gate.response;
 
   const url = new URL(request.url);

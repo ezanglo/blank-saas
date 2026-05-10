@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AuditLogsView } from "@/components/audit/audit-logs-view";
 import { listAuditLogs } from "@/lib/audit/list";
 import { roleAtLeast } from "@/lib/auth/rbac";
+import { orgScopedAllows } from "@/lib/permissions/org-access";
 import { requireOrgContextForSlug } from "@/lib/org/require-active-org";
 
 type Props = {
@@ -12,10 +13,19 @@ type Props = {
 
 export default async function OrgSettingsAuditLogsPage({ params, searchParams }: Props) {
   const { orgSlug } = await params;
-  const { org, role } = await requireOrgContextForSlug(orgSlug);
+  const { org, role, session } = await requireOrgContextForSlug(orgSlug);
   const sp = await searchParams;
 
-  if (!roleAtLeast(role, "admin")) {
+  const canAccess = await orgScopedAllows({
+    organizationId: org.id,
+    userId: session.user.id,
+    userRole: role,
+    rbacAllows: roleAtLeast(role, "admin"),
+    resourceType: "org_audit_logs",
+    action: "read",
+  });
+
+  if (!canAccess) {
     redirect("/organizations?error=forbidden");
   }
 
@@ -42,7 +52,7 @@ export default async function OrgSettingsAuditLogsPage({ params, searchParams }:
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Audit logs</h1>
         <p className="text-muted-foreground text-sm">
-          Activity history for this organization (admin and owner).
+          Activity history (admins by role; read-only delegates via granular permissions).
         </p>
       </div>
       <AuditLogsView

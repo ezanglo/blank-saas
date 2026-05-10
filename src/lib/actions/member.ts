@@ -9,6 +9,7 @@ import { clientIpFromHeaders, userAgentFromHeaders } from "@/lib/audit/request-c
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
 import { ForbiddenError, getMemberRole } from "@/lib/auth/require-org";
 import { canManageMembers } from "@/lib/auth/rbac";
+import { assertOrgScopedAccess } from "@/lib/permissions/org-access";
 import { MEMBER_INVITED } from "@/lib/analytics/events";
 import { captureServerEvent } from "@/lib/analytics/server";
 import { getOrgPlan } from "@/lib/org/plan";
@@ -26,7 +27,14 @@ export async function inviteMemberAction(input: {
   if (!session) throw new ForbiddenError("Not signed in");
 
   const memberRole = await getMemberRole(input.organizationId, session.user.id);
-  if (!canManageMembers(memberRole)) throw new ForbiddenError();
+  await assertOrgScopedAccess({
+    organizationId: input.organizationId,
+    userId: session.user.id,
+    userRole: memberRole,
+    rbacAllows: canManageMembers(memberRole),
+    resourceType: "org_team",
+    action: "invite",
+  });
 
   const email = input.email.trim().toLowerCase();
   if (!email) throw new Error("Email is required");
@@ -86,7 +94,14 @@ export async function cancelInvitationAction(input: {
   if (!session) throw new ForbiddenError("Not signed in");
 
   const memberRole = await getMemberRole(input.organizationId, session.user.id);
-  if (!canManageMembers(memberRole)) throw new ForbiddenError();
+  await assertOrgScopedAccess({
+    organizationId: input.organizationId,
+    userId: session.user.id,
+    userRole: memberRole,
+    rbacAllows: canManageMembers(memberRole),
+    resourceType: "org_team",
+    action: "invite",
+  });
 
   const result = await auth.api.cancelInvitation({
     body: { invitationId: input.invitationId },
@@ -118,7 +133,14 @@ export async function removeMemberAction(input: {
   if (!session) throw new ForbiddenError("Not signed in");
 
   const memberRole = await getMemberRole(input.organizationId, session.user.id);
-  if (!canManageMembers(memberRole)) throw new ForbiddenError();
+  await assertOrgScopedAccess({
+    organizationId: input.organizationId,
+    userId: session.user.id,
+    userRole: memberRole,
+    rbacAllows: canManageMembers(memberRole),
+    resourceType: "org_team",
+    action: "remove_member",
+  });
 
   const contact = await memberContactForAudit(
     input.organizationId,
@@ -169,7 +191,14 @@ export async function updateMemberRoleAction(input: {
   if (!session) throw new ForbiddenError("Not signed in");
 
   const memberRole = await getMemberRole(input.organizationId, session.user.id);
-  if (!canManageMembers(memberRole)) throw new ForbiddenError();
+  await assertOrgScopedAccess({
+    organizationId: input.organizationId,
+    userId: session.user.id,
+    userRole: memberRole,
+    rbacAllows: canManageMembers(memberRole),
+    resourceType: "org_team",
+    action: "manage_roles",
+  });
 
   const before = await memberRoleSnapshot(input.organizationId, input.memberId);
 

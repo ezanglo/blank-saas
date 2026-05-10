@@ -6,6 +6,15 @@ export const RESOURCE_ACTIONS = {
   project: ["read", "write", "delete", "invite"],
   document: ["read", "comment", "write", "delete"],
   api_key: ["read", "rotate", "delete"],
+  /** Org-wide delegation: use organization id as `resourceId`, or `*` in grants. */
+  org_team: ["invite", "manage_roles", "remove_member"],
+  org_webhooks: ["read", "write", "delete"],
+  org_settings: ["write"],
+  org_audit_logs: ["read", "export"],
+  org_usage: ["read"],
+  org_billing: ["read", "manage"],
+  org_sso: ["configure"],
+  org_permissions: ["read"],
 } as const satisfies Record<string, readonly string[]>;
 
 export type KnownResourceType = keyof typeof RESOURCE_ACTIONS;

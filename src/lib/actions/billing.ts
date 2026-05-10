@@ -7,7 +7,9 @@ import { fireAndForgetAuditLog } from "@/lib/audit/log";
 import { clientIpFromHeaders, userAgentFromHeaders } from "@/lib/audit/request-context";
 import { auth } from "@/lib/auth";
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
-import { ForbiddenError, requireOrgRole } from "@/lib/auth/require-org";
+import { ForbiddenError, getMemberRole } from "@/lib/auth/require-org";
+import { roleAtLeast } from "@/lib/auth/rbac";
+import { assertOrgScopedAccess } from "@/lib/permissions/org-access";
 import { createBillingPortalSessionUrl } from "@/lib/billing/portal";
 import { listAllowedPriceIds, resolveStripePricesFromEnv } from "@/lib/billing/plans";
 import { priceChangeKind } from "@/lib/billing/price-change";
@@ -77,10 +79,14 @@ export async function createCheckoutSessionAction(input: {
   const session = await auth.api.getSession({ headers: webHeaders });
   if (!session) throw new ForbiddenError("Not signed in");
 
-  await requireOrgRole({
+  const memberRole = await getMemberRole(input.orgId, session.user.id);
+  await assertOrgScopedAccess({
     organizationId: input.orgId,
     userId: session.user.id,
-    min: "owner",
+    userRole: memberRole,
+    rbacAllows: memberRole === "owner",
+    resourceType: "org_billing",
+    action: "manage",
   });
 
   requireStripeSecretKey();
@@ -228,10 +234,14 @@ export async function createPortalSessionAction(input: { orgId: string }) {
   const session = await auth.api.getSession({ headers: webHeaders });
   if (!session) throw new ForbiddenError("Not signed in");
 
-  await requireOrgRole({
+  const memberRole = await getMemberRole(input.orgId, session.user.id);
+  await assertOrgScopedAccess({
     organizationId: input.orgId,
     userId: session.user.id,
-    min: "admin",
+    userRole: memberRole,
+    rbacAllows: Boolean(memberRole && roleAtLeast(memberRole, "admin")),
+    resourceType: "org_billing",
+    action: "read",
   });
 
   const org = await getOrganizationBillingById(input.orgId);
@@ -249,10 +259,14 @@ export async function resumeSubscriptionAction(input: { orgId: string }) {
   const session = await auth.api.getSession({ headers: webHeaders });
   if (!session) throw new ForbiddenError("Not signed in");
 
-  await requireOrgRole({
+  const memberRole = await getMemberRole(input.orgId, session.user.id);
+  await assertOrgScopedAccess({
     organizationId: input.orgId,
     userId: session.user.id,
-    min: "owner",
+    userRole: memberRole,
+    rbacAllows: memberRole === "owner",
+    resourceType: "org_billing",
+    action: "manage",
   });
 
   requireStripeSecretKey();
@@ -297,10 +311,14 @@ export async function cancelSubscriptionAction(input: { orgId: string }) {
   const session = await auth.api.getSession({ headers: webHeaders });
   if (!session) throw new ForbiddenError("Not signed in");
 
-  await requireOrgRole({
+  const memberRole = await getMemberRole(input.orgId, session.user.id);
+  await assertOrgScopedAccess({
     organizationId: input.orgId,
     userId: session.user.id,
-    min: "owner",
+    userRole: memberRole,
+    rbacAllows: memberRole === "owner",
+    resourceType: "org_billing",
+    action: "manage",
   });
 
   requireStripeSecretKey();

@@ -14,6 +14,7 @@ import {
   requireOrgRole,
 } from "@/lib/auth/require-org";
 import { canDeleteOrganization, canUpdateOrganization } from "@/lib/auth/rbac";
+import { assertOrgScopedAccess } from "@/lib/permissions/org-access";
 import { ORG_CREATED, ORG_DELETED } from "@/lib/analytics/events";
 import { captureServerEvent } from "@/lib/analytics/server";
 import { db } from "@/lib/db";
@@ -100,7 +101,14 @@ export async function updateOrganizationAction(input: {
   if (!session) throw new ForbiddenError("Not signed in");
 
   const role = await getMemberRole(input.organizationId, session.user.id);
-  if (!canUpdateOrganization(role)) throw new ForbiddenError();
+  await assertOrgScopedAccess({
+    organizationId: input.organizationId,
+    userId: session.user.id,
+    userRole: role,
+    rbacAllows: canUpdateOrganization(role),
+    resourceType: "org_settings",
+    action: "write",
+  });
 
   const data: { name?: string; slug?: string } = {};
   if (input.name !== undefined) data.name = input.name.trim();

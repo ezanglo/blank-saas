@@ -18,14 +18,24 @@ import {
 } from "@/lib/billing/subscription-period";
 import { getOrganizationBillingById } from "@/lib/org/load-org";
 import { requireOrgContextForSlug } from "@/lib/org/require-active-org";
+import { orgScopedAllows } from "@/lib/permissions/org-access";
 
 type Props = { params: Promise<{ orgSlug: string }> };
 
 export default async function OrgSettingsBillingPage({ params }: Props) {
   const { orgSlug } = await params;
-  const { org, role } = await requireOrgContextForSlug(orgSlug);
+  const { org, role, session } = await requireOrgContextForSlug(orgSlug);
 
-  if (!roleAtLeast(role, "admin")) {
+  const canAccess = await orgScopedAllows({
+    organizationId: org.id,
+    userId: session.user.id,
+    userRole: role,
+    rbacAllows: roleAtLeast(role, "admin"),
+    resourceType: "org_billing",
+    action: "read",
+  });
+
+  if (!canAccess) {
     redirect("/organizations?error=forbidden");
   }
 
