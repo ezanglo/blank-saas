@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,6 +31,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { domainHasSamlSsoAction } from "@/lib/actions/sso-domain";
 import { authClient } from "@/lib/auth-client";
 import { type SignInValues, signInSchema } from "@/lib/auth/schemas";
 import { refreshClientSessionCache } from "@/lib/query/hooks";
@@ -47,6 +49,72 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
+
+  const emailWatch = form.watch("email");
+  const [ssoAvailable, setSsoAvailable] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const email = emailWatch.trim();
+    const handle = setTimeout(() => {
+      void (async () => {
+        if (!email.includes("@")) {
+          if (!cancelled) setSsoAvailable(false);
+          return;
+        }
+        try {
+          const ok = await domainHasSamlSsoAction(email);
+          if (!cancelled) setSsoAvailable(ok);
+        } catch {
+          if (!cancelled) setSsoAvailable(false);
+        }
+      })();
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [emailWatch]);
+
+  async function signInWithSso() {
+    const origin =
+      process.env.NEXT_PUBLIC_APP_URL ??
+      process.env.NEXT_PUBLIC_BETTER_AUTH_URL ??
+      (typeof window !== "undefined" ? window.location.origin : "");
+    const email = form.getValues("email").trim();
+    if (!email) {
+      toast.error("Enter your work email to use SSO");
+      return;
+    }
+    try {
+      const res = await fetch(`${origin}/api/auth/sign-in/sso`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          callbackURL: redirect,
+          providerType: "saml",
+        }),
+      });
+      let payload: { url?: string; message?: string } = {};
+      try {
+        payload = (await res.json()) as { url?: string; message?: string };
+      } catch {
+        payload = {};
+      }
+      if (!res.ok) {
+        throw new Error(payload.message ?? "SSO sign-in failed");
+      }
+      if (payload.url) {
+        window.location.href = payload.url;
+        return;
+      }
+      throw new Error("No redirect URL returned");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "SSO sign-in failed");
+    }
+  }
 
   async function onSubmit(data: SignInValues) {
     const res = await authClient.signIn.email({
@@ -156,6 +224,21 @@ export function SignInForm({ googleEnabled }: { googleEnabled: boolean }) {
                       </FormItem>
                     )}
                   />
+                  {ssoAvailable ? (
+                    <Field>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => void signInWithSso()}
+                      >
+                        Sign in with SSO
+                      </Button>
+                      <FieldDescription className="text-center">
+                        Your email domain is enrolled for SAML SSO.
+                      </FieldDescription>
+                    </Field>
+                  ) : null}
                   <Field>
                     <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
                       {form.formState.isSubmitting ? "Signing in…" : "Sign in"}

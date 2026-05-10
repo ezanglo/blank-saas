@@ -9,10 +9,12 @@ export function SettingsNav({
   orgSlug,
   isAdmin,
   showWebhooks,
+  isOwner,
 }: {
   orgSlug: string;
   isAdmin: boolean;
   showWebhooks: boolean;
+  isOwner: boolean;
 }) {
   const pathname = usePathname();
   const base = `/organizations/${orgSlug}/settings`;
@@ -24,6 +26,9 @@ export function SettingsNav({
     { href: `${base}/usage`, label: "Usage" },
   ];
 
+  if (isOwner) {
+    items.push({ href: `${base}/sso`, label: "SSO" });
+  }
   if (isAdmin) {
     items.push({ href: `${base}/billing`, label: "Billing" });
     items.push({ href: `${base}/audit-logs`, label: "Audit logs" });

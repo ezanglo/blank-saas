@@ -39,13 +39,14 @@ tests/integration/      # Vitest + fetch / Payload local API / test DB
 **E2E (PRD §23)**
 
 - [ ] `playwright.config.ts` §23.1; `tests/fixtures/` §23.3.
-- [ ] Spec files: `auth`, `organizations`, `members`, `invitations`, `marketing`, `audit-logs`, `webhooks`, `quota`, `billing`, `sso`, `permissions` §23.2.
+- [ ] Spec files: `auth`, `organizations`, `members`, `invitations`, `marketing`, `audit-logs`, `webhooks`, `quota`, `billing`, `permissions` §23.2.
+- [x] `sso` smoke — [`tests/e2e/sso.spec.ts`](../../tests/e2e/sso.spec.ts) (`pnpm test:e2e`).
 - [ ] `pnpm run test` (or `test:e2e`) runs Playwright in CI-like env.
 
 **Unit + API/integration (repo extension)**
 
 - [x] `vitest.config.ts` at repo root; `pnpm run test:unit` / `pnpm run test:unit:watch` ([`vitest.config.ts`](../../vitest.config.ts)).
-- [ ] `pnpm run test:integration` (add when first integration specs land; or a single `pnpm run test:run` with projects).
+- [ ] `pnpm run test:integration` (SSO actions landed under [`tests/integration/sso-actions.test.ts`](../../tests/integration/sso-actions.test.ts); expand Phase 11 for CI wiring).
 - [ ] Unit tests for high-risk **rules**: `src/lib/quota/**`, permission helpers, extracted proxy decision logic, shared Zod schemas.
 - [ ] Integration tests for **server boundaries**: critical `src/app/api/**` handlers, selected server actions under `src/lib/actions/**`, Payload operations that enforce multi-tenant rules (use test `DATABASE_URL` / migrations in CI).
 - [ ] CI workflow runs: **lint**, **typecheck**, **`test:unit`**, **`test:integration`** (with services), **`test:e2e`** (optional parallel job after app + DB up).

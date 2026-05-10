@@ -6,4 +6,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## Payload Next routes
 
 Do **not** edit anything under `src/app/(payload)/` by hand (admin pages, `/api/[...slug]`, GraphQL routes, Payload layout/import map, Payload SCSS). Those files follow Payload’s generated/scaffold patterns. Fix types, wrappers, config, or app behavior outside that tree (e.g. `src/payload.config.ts`, `src/lib/**`, root `next.config`). If something in `(payload)` must change, regenerate or update via Payload’s CLI/docs and `@payloadcms/next` upgrades—not one-off edits in-repo.
+
+## Payload Postgres migrations
+
+- **Never** hand-write migration `.ts` files under `src/migrations/`. Always generate DDL with **`pnpm payload migrate:create`** (optionally **`pnpm payload migrate:create --name <slug>`**) after schema changes.
+- Typical flow when collections change: **`pnpm generate:db-schema`** → **`pnpm generate:types`** → **`pnpm payload migrate:create`** → ensure the new migration is imported into **`src/migrations/index.ts`** (`prodMigrations`) → apply locally with **`pnpm migrate`**.
+- Prefer **`pnpm payload migrate:create`** directly (shortcut: **`pnpm migrate:create`**); avoid **`pnpm run migrate:create -- --name …`**, which can mishandle args under pnpm.
 <!-- END:nextjs-agent-rules -->

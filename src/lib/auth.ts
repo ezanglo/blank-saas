@@ -1,4 +1,5 @@
 import { and, eq, ne, sql } from "@payloadcms/db-postgres/drizzle";
+import { sso } from "@better-auth/sso";
 import { betterAuth } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -12,6 +13,11 @@ import MagicLinkEmail from "@/lib/email/templates/magic-link";
 import ResetPasswordEmail from "@/lib/email/templates/reset-password";
 import VerifyEmail from "@/lib/email/templates/verify-email";
 import * as schema from "@/payload-generated-schema";
+import {
+  emitSsoLoginAuditAndAnalytics,
+  ensureOrgMembershipForSsoProvider,
+  extractSamlProviderIdFromAuthPath,
+} from "@/lib/sso/post-login";
 
 const baseURL = (
   process.env.BETTER_AUTH_URL ??
@@ -70,6 +76,7 @@ export const auth = betterAuth({
     provider: "pg",
     schema: {
       ...schema,
+      ssoProvider: schema.sso_providers,
       user: schema.users,
       session: schema.user_sessions,
       account: schema.user_accounts,
@@ -138,6 +145,15 @@ export const auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       const pathStr = typeof ctx.path === "string" ? ctx.path : "";
       const now = new Date().toISOString();
+
+      const samlPid = extractSamlProviderIdFromAuthPath(pathStr);
+      if (samlPid && ctx.context.newSession?.user?.id) {
+        await emitSsoLoginAuditAndAnalytics({
+          userId: ctx.context.newSession.user.id,
+          userEmail: ctx.context.newSession.user.email,
+          providerId: samlPid,
+        });
+      }
 
       // On sign-up: if this is the very first user, auto-verify + promote to admin
       // so they can sign in immediately without waiting for an email.
@@ -284,6 +300,22 @@ export const auth = betterAuth({
             inviterId: "inviter",
           },
         },
+      },
+    }),
+    sso({
+      providersLimit: 500,
+      fields: {
+        userId: "user",
+        organizationId: "organization",
+      },
+      provisionUser: async ({ user, provider }) => {
+        const orgId = provider.organizationId;
+        if (typeof orgId === "string" && orgId.length > 0) {
+          await ensureOrgMembershipForSsoProvider({
+            organizationId: orgId,
+            userId: user.id,
+          });
+        }
       },
     }),
   ],

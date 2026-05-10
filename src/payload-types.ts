@@ -76,6 +76,7 @@ export interface Config {
     'user-verifications': UserVerification;
     members: Member;
     invitations: Invitation;
+    'sso-providers': SsoProvider;
     'audit-logs': AuditLog;
     'feature-flags': FeatureFlag;
     permissions: Permission;
@@ -96,6 +97,7 @@ export interface Config {
     'user-verifications': UserVerificationsSelect<false> | UserVerificationsSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     invitations: InvitationsSelect<false> | InvitationsSelect<true>;
+    'sso-providers': SsoProvidersSelect<false> | SsoProvidersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'feature-flags': FeatureFlagsSelect<false> | FeatureFlagsSelect<true>;
     permissions: PermissionsSelect<false> | PermissionsSelect<true>;
@@ -308,6 +310,22 @@ export interface Invitation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sso-providers".
+ */
+export interface SsoProvider {
+  id: string;
+  issuer: string;
+  providerId: string;
+  domain: string;
+  oidcConfig?: string | null;
+  samlConfig?: string | null;
+  user: string | User;
+  organization?: (string | null) | Organization;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs".
  */
 export interface AuditLog {
@@ -450,6 +468,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'invitations';
         value: string | Invitation;
+      } | null)
+    | ({
+        relationTo: 'sso-providers';
+        value: string | SsoProvider;
       } | null)
     | ({
         relationTo: 'audit-logs';
@@ -666,6 +688,21 @@ export interface InvitationsSelect<T extends boolean = true> {
   status?: T;
   expiresAt?: T;
   inviter?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sso-providers_select".
+ */
+export interface SsoProvidersSelect<T extends boolean = true> {
+  issuer?: T;
+  providerId?: T;
+  domain?: T;
+  oidcConfig?: T;
+  samlConfig?: T;
+  user?: T;
+  organization?: T;
   updatedAt?: T;
   createdAt?: T;
 }

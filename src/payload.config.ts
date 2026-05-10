@@ -13,6 +13,7 @@ import { Invitations } from "@/collections/auth/Invitations";
 import { Members } from "@/collections/auth/Members";
 import { Organizations } from "@/collections/auth/Organizations";
 import { Sessions } from "@/collections/auth/Sessions";
+import { SsoProviders } from "@/collections/auth/SsoProviders";
 import { TwoFactors } from "@/collections/auth/TwoFactors";
 import { Users } from "@/collections/auth/Users";
 import { Verifications } from "@/collections/auth/Verifications";
@@ -61,6 +62,7 @@ export default buildConfig({
     Verifications,
     Members,
     Invitations,
+    SsoProviders,
     AuditLogs,
     FeatureFlags,
     Permissions,

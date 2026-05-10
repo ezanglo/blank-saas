@@ -438,6 +438,48 @@ export const invitations = pgTable(
   ],
 );
 
+export const sso_providers = pgTable(
+  "sso_providers",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    issuer: varchar("issuer").notNull(),
+    providerId: varchar("provider_id").notNull(),
+    domain: varchar("domain").notNull(),
+    oidcConfig: varchar("oidc_config"),
+    samlConfig: varchar("saml_config"),
+    user: uuid("user_id")
+      .notNull()
+      .references(() => users.id, {
+        onDelete: "set null",
+      }),
+    organization: uuid("organization_id").references(() => organizations.id, {
+      onDelete: "set null",
+    }),
+    updatedAt: timestamp("updated_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    })
+      .defaultNow()
+      .notNull(),
+  },
+  (columns) => [
+    uniqueIndex("sso_providers_provider_id_idx").on(columns.providerId),
+    index("sso_providers_domain_idx").on(columns.domain),
+    index("sso_providers_user_idx").on(columns.user),
+    index("sso_providers_organization_idx").on(columns.organization),
+    index("sso_providers_updated_at_idx").on(columns.updatedAt),
+    index("sso_providers_created_at_idx").on(columns.createdAt),
+  ],
+);
+
 export const audit_logs = pgTable(
   "audit_logs",
   {
@@ -638,6 +680,7 @@ export const payload_locked_documents_rels = pgTable(
     "user-verificationsID": uuid("user_verifications_id"),
     membersID: uuid("members_id"),
     invitationsID: uuid("invitations_id"),
+    "sso-providersID": uuid("sso_providers_id"),
     "audit-logsID": uuid("audit_logs_id"),
     "feature-flagsID": uuid("feature_flags_id"),
     permissionsID: uuid("permissions_id"),
@@ -667,6 +710,9 @@ export const payload_locked_documents_rels = pgTable(
     index("payload_locked_documents_rels_members_id_idx").on(columns.membersID),
     index("payload_locked_documents_rels_invitations_id_idx").on(
       columns.invitationsID,
+    ),
+    index("payload_locked_documents_rels_sso_providers_id_idx").on(
+      columns["sso-providersID"],
     ),
     index("payload_locked_documents_rels_audit_logs_id_idx").on(
       columns["audit-logsID"],
@@ -729,6 +775,11 @@ export const payload_locked_documents_rels = pgTable(
       columns: [columns["invitationsID"]],
       foreignColumns: [invitations.id],
       name: "payload_locked_documents_rels_invitations_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [columns["sso-providersID"]],
+      foreignColumns: [sso_providers.id],
+      name: "payload_locked_documents_rels_sso_providers_fk",
     }).onDelete("cascade"),
     foreignKey({
       columns: [columns["audit-logsID"]],
@@ -898,6 +949,18 @@ export const relations_invitations = relations(invitations, ({ one }) => ({
     relationName: "inviter",
   }),
 }));
+export const relations_sso_providers = relations(sso_providers, ({ one }) => ({
+  user: one(users, {
+    fields: [sso_providers.user],
+    references: [users.id],
+    relationName: "user",
+  }),
+  organization: one(organizations, {
+    fields: [sso_providers.organization],
+    references: [organizations.id],
+    relationName: "organization",
+  }),
+}));
 export const relations_audit_logs = relations(audit_logs, ({ one }) => ({
   organization: one(organizations, {
     fields: [audit_logs.organization],
@@ -970,6 +1033,11 @@ export const relations_payload_locked_documents_rels = relations(
       fields: [payload_locked_documents_rels.invitationsID],
       references: [invitations.id],
       relationName: "invitations",
+    }),
+    "sso-providersID": one(sso_providers, {
+      fields: [payload_locked_documents_rels["sso-providersID"]],
+      references: [sso_providers.id],
+      relationName: "sso-providers",
     }),
     "audit-logsID": one(audit_logs, {
       fields: [payload_locked_documents_rels["audit-logsID"]],
@@ -1044,6 +1112,7 @@ type DatabaseSchema = {
   user_verifications: typeof user_verifications;
   members: typeof members;
   invitations: typeof invitations;
+  sso_providers: typeof sso_providers;
   audit_logs: typeof audit_logs;
   feature_flags: typeof feature_flags;
   permissions: typeof permissions;
@@ -1063,6 +1132,7 @@ type DatabaseSchema = {
   relations_user_verifications: typeof relations_user_verifications;
   relations_members: typeof relations_members;
   relations_invitations: typeof relations_invitations;
+  relations_sso_providers: typeof relations_sso_providers;
   relations_audit_logs: typeof relations_audit_logs;
   relations_feature_flags: typeof relations_feature_flags;
   relations_permissions: typeof relations_permissions;

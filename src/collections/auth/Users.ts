@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import { auth } from "../../lib/auth";
 import type { CollectionConfig } from "payload";
 
 export const Users: CollectionConfig = {
@@ -84,6 +84,43 @@ export const Users: CollectionConfig = {
         await req.payload.delete({
           collection: "invitations",
           where: { inviter: { equals: id } },
+          req,
+          overrideAccess: true,
+        });
+        const ssoProviders = await req.payload.find({
+          collection: "sso-providers",
+          where: { user: { equals: id } },
+          limit: 500,
+          depth: 0,
+          req,
+          overrideAccess: true,
+        });
+        for (const row of ssoProviders.docs) {
+          const providerId =
+            typeof row.providerId === "string" ? row.providerId : null;
+          if (providerId) {
+            const orgs = await req.payload.find({
+              collection: "organizations",
+              where: { samlConnectionId: { equals: providerId } },
+              limit: 50,
+              depth: 0,
+              req,
+              overrideAccess: true,
+            });
+            for (const org of orgs.docs) {
+              await req.payload.update({
+                collection: "organizations",
+                id: org.id,
+                data: { samlConnectionId: null },
+                req,
+                overrideAccess: true,
+              });
+            }
+          }
+        }
+        await req.payload.delete({
+          collection: "sso-providers",
+          where: { user: { equals: id } },
           req,
           overrideAccess: true,
         });

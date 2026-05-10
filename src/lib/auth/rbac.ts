@@ -30,3 +30,8 @@ export function canManageMembers(role: string | null | undefined): boolean {
 export function canDeleteOrganization(role: string | null | undefined): boolean {
   return role === "owner";
 }
+
+/** SAML / SSO IdP configuration — owner only (Phase 9). */
+export function canConfigureSso(role: string | null | undefined): boolean {
+  return role === "owner";
+}

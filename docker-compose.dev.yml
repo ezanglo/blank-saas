@@ -1,0 +1,50 @@
+# Local PostgreSQL for Payload + Better Auth (Phase 11 expands this stack).
+# SAML SSO uses Better Auth `@better-auth/sso` (Jackson optional legacy §31).
+#
+# Jackson sidecar (same Postgres):
+#   docker compose -f docker-compose.dev.yml --profile jackson up
+#
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blank_saas
+    volumes:
+      - blank_saas_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d blank_saas"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  jackson:
+    profiles: ["jackson"]
+    image: boxyhq/jackson:latest
+    restart: unless-stopped
+    ports:
+      - "5225:5225"
+    environment:
+      DB_ENGINE: sql
+      DB_TYPE: postgres
+      DB_URL: postgresql://postgres:postgres@postgres:5432/blank_saas
+      DB_SSL: "false"
+      HOST: "0.0.0.0"
+      PORT: "5225"
+      NEXTAUTH_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      NEXTAUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-change-me}
+      JACKSON_API_KEY: ${JACKSON_API_KEY:-dev-jackson-api-key}
+      PRODUCT: ${JACKSON_PRODUCT:-starter}
+      SAML_AUDIENCE: ${SAML_AUDIENCE:-http://localhost:5225}
+      PUBLIC_HOST_URL: ${JACKSON_PUBLIC_HOST_URL:-http://localhost:5225}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  blank_saas_pg:

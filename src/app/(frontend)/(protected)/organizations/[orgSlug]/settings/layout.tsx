@@ -30,7 +30,7 @@ export default async function OrgSettingsLayout({ children, params }: Props) {
       <div className="flex flex-1 flex-col gap-6 lg:flex-row lg:gap-12">
         <aside className="w-full lg:w-64 lg:shrink-0">
           <div className="flex flex-col gap-4 lg:sticky lg:top-24">
-            <SettingsNav orgSlug={orgSlug} isAdmin={isAdmin} showWebhooks={showWebhooks} />
+            <SettingsNav orgSlug={orgSlug} isAdmin={isAdmin} showWebhooks={showWebhooks} isOwner={role === "owner"} />
           </div>
         </aside>
         <div className="min-w-0 flex-1">{children}</div>
