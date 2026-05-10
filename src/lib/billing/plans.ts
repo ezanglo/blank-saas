@@ -27,6 +27,20 @@ export function resolveStripePricesFromEnv(
   };
 }
 
+/** Same as `resolveStripePricesFromEnv` but returns null when vars are missing (e.g. misconfigured worker). */
+export function tryResolveStripePricesFromEnv(
+  env: NodeJS.ProcessEnv = process.env,
+): StripePricesResolved | null {
+  const proMonthly = env.STRIPE_PRICE_PRO_MONTHLY?.trim();
+  const proYearly = env.STRIPE_PRICE_PRO_YEARLY?.trim();
+  const enterpriseMonthly = env.STRIPE_PRICE_ENTERPRISE_MONTHLY?.trim();
+  if (!proMonthly || !proYearly || !enterpriseMonthly) return null;
+  return {
+    pro: { monthly: proMonthly, yearly: proYearly },
+    enterprise: { monthly: enterpriseMonthly },
+  };
+}
+
 /** All purchasable price IDs (for checkout validation). */
 export function listAllowedPriceIds(prices: StripePricesResolved): Set<string> {
   return new Set([

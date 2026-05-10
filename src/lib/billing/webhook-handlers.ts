@@ -51,16 +51,17 @@ export function mapStripeSubscriptionStatus(
 
 export function orgStripePatchFromSubscription(
   sub: Stripe.Subscription,
-  prices: StripePricesResolved,
+  prices: StripePricesResolved | null,
 ): OrgStripePatch {
   const priceId = primaryPriceIdFromSubscription(sub);
-  const plan = priceId ? planFromPriceId(priceId, prices) : ("free" as const);
-  return {
-    plan,
+  const base: OrgStripePatch = {
     stripeSubscriptionId: sub.id,
     stripeSubscriptionStatus: mapStripeSubscriptionStatus(sub.status),
     stripePriceId: priceId,
   };
+  if (!prices) return base;
+  const plan = priceId ? planFromPriceId(priceId, prices) : ("free" as const);
+  return { ...base, plan };
 }
 
 export function orgStripePatchForSubscriptionDeleted(): OrgStripePatch {

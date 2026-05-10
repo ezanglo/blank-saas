@@ -56,6 +56,19 @@ describe("orgStripePatchFromSubscription", () => {
       stripePriceId: "price_pm",
     });
   });
+
+  it("omits plan when price catalog is unavailable", () => {
+    const sub = {
+      id: "sub_1",
+      status: "active" as const,
+      items: { data: [{ price: { id: "price_pm" } }] },
+    };
+    expect(orgStripePatchFromSubscription(sub as never, null)).toEqual({
+      stripeSubscriptionId: "sub_1",
+      stripeSubscriptionStatus: "active",
+      stripePriceId: "price_pm",
+    });
+  });
 });
 
 describe("preset patches", () => {

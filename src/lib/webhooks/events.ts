@@ -17,7 +17,12 @@ export const WebhookEvents = {
     userId: z.string(),
     newRole: z.string(),
   }),
+  "billing.checkout_started": z.object({ orgId: z.string(), priceId: z.string() }),
   "billing.subscription_activated": z.object({ orgId: z.string(), plan: z.string() }),
+  "billing.subscription_resumed": z.object({
+    orgId: z.string(),
+    stripeSubscriptionId: z.string(),
+  }),
   "billing.subscription_cancelled": z.object({ orgId: z.string() }),
   "billing.plan_changed": z.object({
     orgId: z.string(),

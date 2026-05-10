@@ -6,7 +6,7 @@ import { getPayload } from "payload";
 import { fireAndForgetAuditLog } from "@/lib/audit/log";
 import { findOrgIdByStripeCustomerId } from "@/lib/billing/find-org-by-stripe-customer";
 import { getOwnerEmailsForOrg } from "@/lib/billing/owner-emails";
-import { resolveStripePricesFromEnv } from "@/lib/billing/plans";
+import { tryResolveStripePricesFromEnv } from "@/lib/billing/plans";
 import { tryClaimStripeEvent } from "@/lib/billing/stripe-idempotency";
 import { stripe } from "@/lib/billing/stripe";
 import {
@@ -88,8 +88,6 @@ export async function processStripeWebhookEvent(event: Stripe.Event): Promise<vo
   const claimed = await tryClaimStripeEvent(event.id);
   if (!claimed) return;
 
-  const prices = resolveStripePricesFromEnv();
-
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -105,6 +103,12 @@ export async function processStripeWebhookEvent(event: Stripe.Event): Promise<vo
         return;
       }
       const sub = (await stripe.subscriptions.retrieve(subId)) as Stripe.Subscription;
+      const prices = tryResolveStripePricesFromEnv();
+      if (!prices) {
+        console.error(
+          "[stripe] STRIPE_PRICE_* missing; syncing subscription fields without plan mapping",
+        );
+      }
       const patch = orgStripePatchFromSubscription(sub, prices);
       const prev = await getOrganizationBillingById(orgId);
       if (!prev) return;
@@ -132,11 +136,17 @@ export async function processStripeWebhookEvent(event: Stripe.Event): Promise<vo
         console.error("[stripe] customer.subscription.updated could not resolve org");
         return;
       }
+      const prices = tryResolveStripePricesFromEnv();
+      if (!prices) {
+        console.error(
+          "[stripe] STRIPE_PRICE_* missing; syncing subscription fields without plan mapping",
+        );
+      }
       const patch = orgStripePatchFromSubscription(sub, prices);
       const prev = await getOrganizationBillingById(orgId);
       if (!prev) return;
       await applyOrgStripePatch(orgId, patch);
-      if (prev.plan !== patch.plan) {
+      if (patch.plan !== undefined && prev.plan !== patch.plan) {
         fireAndForgetAuditLog("billing.plan_changed", {
           organizationId: orgId,
           ...STRIPE_ACTOR,

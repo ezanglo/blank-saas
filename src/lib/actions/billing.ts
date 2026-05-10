@@ -19,8 +19,13 @@ import {
 import { subscriptionCancelAtPeriodEnd } from "@/lib/billing/subscription-period";
 import { orgStripePatchFromSubscription } from "@/lib/billing/webhook-handlers";
 import { getOrganizationBillingById } from "@/lib/org/load-org";
+import { sendWebhookFireAndForget } from "@/lib/webhooks/send";
 import config from "@payload-config";
 import { getPayload } from "payload";
+
+function notifyCheckoutStarted(orgId: string, priceId: string): void {
+  sendWebhookFireAndForget(orgId, "billing.checkout_started", { orgId, priceId });
+}
 
 function subscriptionCanSwapPriceOnPortal(status: Stripe.Subscription.Status): boolean {
   return status !== "canceled" && status !== "incomplete_expired";
@@ -165,6 +170,7 @@ export async function createCheckoutSessionAction(input: {
         ipAddress: clientIpFromHeaders(h),
         userAgent: userAgentFromHeaders(h),
       });
+      notifyCheckoutStarted(input.orgId, input.priceId);
 
       return { flow: "downgrade_scheduled", periodEndUnix };
     }
@@ -180,6 +186,7 @@ export async function createCheckoutSessionAction(input: {
       ipAddress: clientIpFromHeaders(h),
       userAgent: userAgentFromHeaders(h),
     });
+    notifyCheckoutStarted(input.orgId, input.priceId);
 
     return { flow: "subscription_updated" };
   }
@@ -207,6 +214,7 @@ export async function createCheckoutSessionAction(input: {
     ipAddress: clientIpFromHeaders(h),
     userAgent: userAgentFromHeaders(h),
   });
+  notifyCheckoutStarted(input.orgId, input.priceId);
 
   if (!checkout.url) {
     throw new Error("Checkout did not return a URL.");
@@ -259,6 +267,8 @@ export async function resumeSubscriptionAction(input: { orgId: string }) {
     throw new Error("VALIDATION: This subscription is not scheduled for cancellation.");
   }
 
+  await releaseSubscriptionScheduleIfPresent(org.stripeSubscriptionId);
+
   await stripe.subscriptions.update(org.stripeSubscriptionId, {
     cancel_at_period_end: false,
   });
@@ -273,6 +283,11 @@ export async function resumeSubscriptionAction(input: { orgId: string }) {
     metadata: { stripeSubscriptionId: org.stripeSubscriptionId },
     ipAddress: clientIpFromHeaders(h),
     userAgent: userAgentFromHeaders(h),
+  });
+
+  sendWebhookFireAndForget(input.orgId, "billing.subscription_resumed", {
+    orgId: input.orgId,
+    stripeSubscriptionId: org.stripeSubscriptionId,
   });
 }
 
