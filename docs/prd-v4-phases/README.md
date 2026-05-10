@@ -10,7 +10,7 @@ Companion references for building [nextjs-multitenant-starter-PRD-v4.md](../../n
 | 2 | [phase-02-database-payload-auth.md](phase-02-database-payload-auth.md) | Drizzle, Payload collections, better-auth, migrations, org mirror + **admin/product auth URLs** *(doc aligned with repo)* |
 | 3 | [phase-03-middleware-email-query.md](phase-03-middleware-email-query.md) | **`proxy.ts`** (Next 16), email, TanStack Query |
 | 4 | [phase-04-auth-and-marketing.md](phase-04-auth-and-marketing.md) | Auth pages, marketing, MDX, sitemap |
-| 5 | [phase-05-dashboard-orgs.md](phase-05-dashboard-orgs.md) | Dashboard shell, orgs, members, invitations |
+| 5 | [phase-05-dashboard-orgs.md](phase-05-dashboard-orgs.md) | Dashboard shell, orgs, members, invitations — **status in doc** |
 | 6 | [phase-06-audit-flags-quotas-webhooks.md](phase-06-audit-flags-quotas-webhooks.md) | Audit logs, flags, quotas, Svix |
 | 7 | [phase-07-stripe-billing.md](phase-07-stripe-billing.md) | Stripe checkout, webhooks, billing UI |
 | 8 | [phase-08-posthog.md](phase-08-posthog.md) | PostHog client/server, events |
@@ -24,6 +24,7 @@ Companion references for building [nextjs-multitenant-starter-PRD-v4.md](../../n
 - **Granular auth:** Implement **PRD Section 32** (Payload-backed permissions). The Section 2 table row mentioning Permit.io is outdated.
 - **PRD Section 17.1:** “Permissions — See Section 29.3” is a typo → use **Section 32**.
 - **Next.js:** This repo targets Next 16. Request gating uses **`src/proxy.ts`** (`proxy`), not `middleware.ts`. Check Payload’s Next integration for API route patterns.
+- **Route group name:** the authenticated app lives under **`src/app/(frontend)/(protected)/`** (not a `(dashboard)` segment as in some older PRD stubs). Phase 5 doc lists canonical paths.
 
 ## Canonical env reference
 

@@ -104,34 +104,36 @@ The three-role model (`owner` / `admin` / `member`) is sufficient for most SaaS 
 │   │   │   └── legal/
 │   │   │       ├── privacy/page.tsx
 │   │   │       └── terms/page.tsx
-│   │   ├── (auth)/                     # Auth route group
-│   │   │   ├── login/page.tsx
-│   │   │   ├── register/page.tsx
+│   │   ├── (auth)/(guest)/             # Guest-only auth layouts (signed-in → redirect away)
+│   │   │   ├── layout.tsx
+│   │   │   ├── sign-in/page.tsx
+│   │   │   ├── sign-up/page.tsx
 │   │   │   ├── forgot-password/page.tsx
 │   │   │   └── reset-password/page.tsx
-│   │   ├── (dashboard)/                # Protected route group
-│   │   │   ├── layout.tsx
-│   │   │   ├── dashboard/page.tsx
-│   │   │   ├── account/
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── security/page.tsx
+│   │   ├── (auth)/sign-out/page.tsx
+│   │   ├── (protected)/               # Protected product shell *(historic PRDs use "(dashboard)")*
+│   │   │   ├── layout.tsx             # Session gate → app chrome
+│   │   │   ├── dashboard/page.tsx     # Optional alias → active org workspace
+│   │   │   ├── invite/[invitationId]/page.tsx  # Invite accept UX
+│   │   │   ├── account/page.tsx       # Profile + security (single page starter)
 │   │   │   ├── organizations/
-│   │   │   │   ├── page.tsx
-│   │   │   │   ├── new/page.tsx
+│   │   │   │   ├── page.tsx           # Org picker / list
 │   │   │   │   └── [orgSlug]/
 │   │   │   │       ├── page.tsx
 │   │   │   │       ├── settings/page.tsx
-│   │   │   │       ├── members/page.tsx
+│   │   │   │       ├── team/page.tsx          # Canonical members + invitations
+│   │   │   │       ├── members/page.tsx       # → redirect /team
+│   │   │   │       ├── invitations/page.tsx   # → redirect /team?tab=invites
 │   │   │   │       ├── audit-logs/page.tsx
 │   │   │   │       ├── webhooks/
 │   │   │   │       │   ├── page.tsx
 │   │   │   │       │   └── [endpointId]/page.tsx
 │   │   │   │       ├── usage/page.tsx
 │   │   │   │       └── permissions/page.tsx
-│   │   │   └── settings/page.tsx
+│   │   │   └── settings/page.tsx      # Optional alias → /account
 │   │   ├── api/
 │   │   │   ├── auth/[...all]/route.ts
-│   │   │   ├── invitations/accept/route.ts   # Invitation acceptance handler
+│   │   │   ├── invitations/accept/route.ts   # OPTIONAL — starter uses /invite/[id] + Server Actions
 │   │   │   ├── orgs/[orgId]/usage/route.ts  # Quota counter endpoint
 │   │   │   ├── webhooks/
 │   │   │   │   ├── svix/route.ts            # Svix operational webhook handler
@@ -154,15 +156,16 @@ The three-role model (`owner` / `admin` / `member`) is sufficient for most SaaS 
 │   │   │   ├── cta-section.tsx
 │   │   │   └── blog-card.tsx
 │   │   ├── auth/
-│   │   │   ├── login-form.tsx
-│   │   │   ├── register-form.tsx
+│   │   │   ├── sign-in-form.tsx
+│   │   │   ├── sign-up-form.tsx
 │   │   │   ├── forgot-password-form.tsx
 │   │   │   └── reset-password-form.tsx
 │   │   ├── layout/
-│   │   │   ├── sidebar.tsx
-│   │   │   ├── header.tsx
-│   │   │   ├── org-switcher.tsx
-│   │   │   └── user-nav.tsx
+│   │   │   ├── dashboard-shell.tsx
+│   │   │   ├── app-sidebar.tsx
+│   │   │   ├── team-switcher.tsx      # Org / workspace switcher in sidebar
+│   │   │   ├── site-header.tsx
+│   │   │   └── nav-user.tsx
 │   │   ├── organizations/
 │   │   │   ├── org-card.tsx
 │   │   │   ├── create-org-form.tsx
@@ -179,9 +182,9 @@ The three-role model (`owner` / `admin` / `member`) is sufficient for most SaaS 
 │   │   │   ├── endpoint-list.tsx
 │   │   │   ├── add-endpoint-dialog.tsx
 │   │   │   └── delivery-log-table.tsx
-│   │   └── usage/
-│   │       ├── quota-card.tsx
-│   │       └── usage-chart.tsx
+│   │   ├── usage/
+│   │   │   ├── quota-card.tsx
+│   │   │   └── usage-chart.tsx
 │   │   ├── billing/
 │   │   │   ├── plan-card.tsx
 │   │   │   ├── upgrade-dialog.tsx
@@ -194,7 +197,8 @@ The three-role model (`owner` / `admin` / `member`) is sufficient for most SaaS 
 │   │   │   ├── auth.ts
 │   │   │   ├── auth-client.ts
 │   │   │   ├── payload-access.ts       # getSessionForAccess() helper
-│   │   │   └── middleware.ts
+│   │   │   ├── rbac.ts                 # role matrix helpers (canManageMembers, etc.)
+│   │   │   └── require-org.ts          # require membership / load org by slug
 │   │   ├── db/
 │   │   │   └── index.ts                # Shared Drizzle instance (from Payload)
 │   │   ├── payload/
@@ -202,7 +206,8 @@ The three-role model (`owner` / `admin` / `member`) is sufficient for most SaaS 
 │   │   ├── actions/
 │   │   │   ├── organization.ts         # createOrg, updateOrg, deleteOrg
 │   │   │   ├── member.ts               # inviteMember, removeMember, changeRole
-│   │   │   └── account.ts              # updateProfile, changePassword
+│   │   │   ├── account.ts              # updateProfile, changePassword
+│   │   │   └── invitations.ts          # acceptInvitation, rejectInvitation (Server Actions)
 │   │   ├── query/
 │   │   │   └── client.tsx
 │   │   ├── email/
@@ -246,26 +251,7 @@ The three-role model (`owner` / `admin` / `member`) is sufficient for most SaaS 
 │   │   │   ├── organization.ts
 │   │   │   └── account.ts
 │   │   └── utils.ts
-│   ├── hooks/
-│   │   ├── use-session.ts
-│   │   ├── use-active-org.ts
-│   │   ├── use-organizations.ts
-│   │   ├── use-members.ts
-│   │   ├── use-audit-logs.ts
-│   │   ├── use-quota.ts
-│   │   ├── use-billing.ts
-│   │   └── use-permissions.ts
-│   ├── payload/
-│   │   ├── payload.config.ts
-│   │   ├── collections/
-│   │   │   ├── Users.ts
-│   │   │   ├── Media.ts
-│   │   │   ├── Organizations.ts
-│   │   │   ├── AuditLogs.ts
-│   │   │   ├── FeatureFlags.ts
-│   │   │   └── Permissions.ts
-│   │   └── migrations/
-│   └── middleware.ts
+│   ├── proxy.ts                       # Next 16 request interception (`export { proxy }` — see §4.4)
 ├── content/
 │   ├── blog/
 │   │   └── getting-started.mdx
@@ -296,6 +282,14 @@ The three-role model (`owner` / `admin` / `member`) is sufficient for most SaaS 
 ├── playwright.config.ts
 └── payload-types.ts
 ```
+
+### 3.1 Implementation notes — Next.js 16 starter (this repo)
+
+- **Route grouping:** Authenticated UI lives under **`(protected)/`**, nested under **`(frontend)/`** alongside marketing and auth route groups. Older drafts may label this **`(dashboard)/`** — same intent.
+- **Auth URLs:** Product flows use **`/sign-in`** and **`/sign-up`** (not `/login` / `/register`). **`(auth)/(guest)/`** wraps password recovery too; **`/sign-out`** stays outside **`(guest)`**.
+- **`/dashboard`:** Stable entry URL that forwards to **active-org workspace home** (`/organizations/[orgSlug]` when resolved) — useful post-login and from layouts.
+- **Payload CMS:** Scaffold under **`src/app/(payload)/`** (`@payloadcms/next`); **`src/payload.config.ts`** + **`src/collections/`** replace the illustrative `payload/` subtree from older outlines.
+- **TanStack Query:** Typical layout is **`src/lib/query/`** (hooks + keys) wired through app providers rather than standalone `hooks/use-session.ts`.
 
 ---
 
@@ -348,50 +342,41 @@ import { toNextJsHandler } from "better-auth/next-js"
 export const { GET, POST } = toNextJsHandler(auth)
 ```
 
-### 4.4 Middleware (`src/middleware.ts`)
+### 4.4 Request interception (`src/proxy.ts`) + protected layouts
 
-Execution order within middleware:
+Next.js **16 / starter convention:** central interception lives in **`src/proxy.ts`** exporting **`proxy`** (`export { proxy }`). Follow the **same ordered steps** you would historically put in `middleware.ts`; keep logic in helpers (e.g. **`src/lib/proxy-guards.ts`**) for unit tests.
 
-1. **Rate limiting** — apply IP-based sliding window to all `/api/*` routes (see Section 10.5). Return `429` immediately if exceeded.
-2. **Auth check** — call `auth.api.getSession({ headers: request.headers })`. If no session and path is under `/(dashboard)`, redirect to `/login` with `?callbackUrl=<current path>`.
-3. **Active org resolution** — if session exists and `session.session.activeOrganizationId` is null, call `auth.api.setActiveOrganization` using the user's first org. This keeps the active org in better-auth's session, not a custom cookie.
-4. **Org membership guard** — for `/(dashboard)/organizations/[orgSlug]/*` routes, resolve the org by slug from the Payload Organizations collection and verify `session.session.activeOrganizationId` matches. If not a member, redirect to `/dashboard`.
-5. **Public pass-through** — `/(marketing)` and `/(auth)` routes always pass through.
+**Suggested execution order** inside `proxy` (aligned with §16.5 for API rate limits):
+
+1. **Rate limiting** — sliding window on **`/api/*`** (reject **429** fast).
+2. **Auth check** — `auth.api.getSession({ headers })`. When there is **no session** on **protected UI paths**, redirect to **`/sign-in`** with **`callbackUrl`** set to the requested path *(product routes use **`/sign-in`**, not `/login`)*.
+3. **Active org resolution** — if **`activeOrganizationId`** is unset, optionally call **`auth.api.setActiveOrganization`** using the user's first membership.
+4. **Org slug membership guard** — under **`/organizations/[orgSlug]/**`**, ensure the slug matches **`activeOrganizationId`** membership (or normalized guard rules); otherwise redirect somewhere safe (**`/organizations`** / **`/dashboard`**).
+5. **Public pass-through** — **`/(marketing)`**, **`/(auth)/(guest)`**, **`(payload)`** route group bypass product guards where appropriate.
+
+**Composable layout gate:** Regardless of proxy wiring timing, **`src/app/(frontend)/(protected)/layout.tsx`** should enforce **“must have session”** for nested pages so UI cannot render half-authenticated shells. Prefer **`proxy`** + **`callbackUrl`** for redirects that originate before RSC renders; layouts may redirect without preserving **`callbackUrl`** unless you mirror that behavior manually.
+
+<details>
+<summary>Legacy pseudocode (<code>middleware()</code>, Next 13–15 style)</summary>
+
+Projects still on **`middleware.ts`** mirror the snippet below with **`/(protected)`** pathname checks and **`/sign-in`** redirects:
 
 ```ts
-// src/middleware.ts
-import { NextRequest, NextResponse } from "next/server"
-import { auth } from "@/lib/auth/auth"
-import { apiRateLimiter } from "@/lib/quota/limiter"
+// Pseudocode — prefer src/proxy.ts proxy export on Next 16 starters
+const isProtectedUi =
+  pathname.startsWith("/dashboard") ||
+  pathname.startsWith("/organizations") ||
+  pathname.startsWith("/account") ||
+  pathname.startsWith("/settings")
 
-export async function middleware(request: NextRequest) {
-  // 1. Rate limiting
-  if (request.nextUrl.pathname.startsWith("/api/")) {
-    const ip = request.headers.get("x-forwarded-for") ?? "unknown"
-    const { success } = await apiRateLimiter.limit(ip)
-    if (!success) return new NextResponse("Too many requests", { status: 429 })
-  }
-
-  // 2. Auth check
-  const session = await auth.api.getSession({ headers: request.headers })
-  const isDashboard = request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/organizations") ||
-    request.nextUrl.pathname.startsWith("/account") ||
-    request.nextUrl.pathname.startsWith("/settings")
-
-  if (isDashboard && !session) {
-    const loginUrl = new URL("/login", request.url)
-    loginUrl.searchParams.set("callbackUrl", request.nextUrl.pathname)
-    return NextResponse.redirect(loginUrl)
-  }
-
-  return NextResponse.next()
-}
-
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+if (isProtectedUi && !session) {
+  const url = new URL("/sign-in", request.url)
+  url.searchParams.set("callbackUrl", pathname)
+  return NextResponse.redirect(url)
 }
 ```
+
+</details>
 
 ### 4.5 Payload Access Helper (`src/lib/auth/payload-access.ts`)
 
@@ -727,37 +712,31 @@ All mutations are implemented as Next.js Server Actions in `src/lib/actions/`. E
 
 ### 9.1 Sending an Invitation
 
-1. User fills `invite-member-dialog.tsx` with email and role.
+1. User fills the invite dialog (e.g. `invite-member-dialog.tsx` / `org-invite-member-dialog.tsx`) with email and role.
 2. `inviteMember()` Server Action calls `auth.api.createInvitation({ email, role, organizationId })`.
-3. better-auth creates a record in the `invitation` table with a unique token and 48-hour expiry.
-4. The action sends the `invite-member.tsx` email with URL: `${NEXT_PUBLIC_APP_URL}/api/invitations/accept?token=<token>`.
-5. Audit log entry `member.invited` is created.
+3. better-auth creates a record in the `invitation` table with a unique ID and expiry (commonly 48–72 hours).
+4. The hook sends the `invite-member.tsx` email with URL: **`${NEXT_PUBLIC_APP_URL}/invite/<invitationId>`** (invitation **row id** in the path — see `sendInvitationEmail` in `src/lib/auth.ts`). *Optional alternative:* add **`GET /api/invitations/accept?token=…`** only if you need a legacy or webhook-style HTTP acceptor; the starter uses **Server Actions** instead.
+5. Audit log entry `member.invited` is created (when audit instrumentation is enabled).
 
-### 9.2 Accepting an Invitation (`src/app/api/invitations/accept/route.ts`)
+### 9.2 Accepting an Invitation — page + Server Action (starter)
 
-```
-GET /api/invitations/accept?token=<token>
+Primary UX: **`/invite/[invitationId]`** (protected).
 
-1. Call auth.api.acceptInvitation({ invitationToken: token })
-   → If user is not logged in, better-auth returns an error.
-   → Redirect to /login?callbackUrl=/api/invitations/accept?token=<token>
-     so the flow resumes after login.
+1. **Preview** — client loads invitation metadata via Better Auth organization HTTP API (e.g. `get-invitation?id=…`) with credentials.
+2. **Accept** — user clicks accept → **`acceptInvitationAction(invitationId)`** (`"use server"`) calls **`auth.api.acceptInvitation({ body: { invitationId }, headers })`** with the same cookies as the browser session.
+3. **Unauthenticated** — send the user to **`/sign-in`** with **`callbackUrl=/invite/<id>`** so they return to the same page after login; then re-run accept.
+4. **Success** — navigate to **`/organizations/<orgSlug>`** (or resolve slug after accept); invalidate TanStack **session** + **organizations** keys so sidebars reflect the new membership.
+5. **Expired / invalid** — show inline error; optional redirect to **`/sign-in?error=invitation_expired`**.
 
-2. On success:
-   → better-auth creates the member record.
-   → Redirect to /dashboard with toast param: ?welcome=1
-
-3. On expired/invalid token:
-   → Redirect to /login?error=invitation_expired
-```
+**Optional REST handler:** `src/app/api/invitations/accept/route.ts` is **not required** for the core flow. Add it if a non-browser client must accept without Server Actions.
 
 ### 9.3 Invitation for New Users
 
-If the invited email has no account, the invite email includes copy: "Create your account first, then click the link again." The acceptance route handles this gracefully — if the user creates an account and then revisits the token URL, the flow proceeds normally as long as the token has not expired (48 hours).
+If the invited email has no account, the invite email includes copy: "Create your account first, then click the link again." The **`/invite/[invitationId]`** page handles this — after the user signs up / signs in, revisiting **`/invite/...`** proceeds as long as the invitation has not expired.
 
 ### 9.4 Pending Invitations UI
 
-`members-table.tsx` displays a "Pending" tab alongside active members, listing outstanding invitations with email, role, expiry, and a "Cancel" button (calls `cancelInvitation()`). Data fetched via `auth.api.listInvitations({ organizationId })`.
+The **Team** area under **`/organizations/[orgSlug]/team`** combines members and invitations (e.g. **Members** vs **Pending** tabs). Older paths like **`/members`** / **`/invitations`** may **redirect** into this page. Outstanding invitations list email, role, expiry; **Cancel** calls `cancelInvitation()`. Data from **`auth.api.listInvitations({ organizationId })`** (or TanStack wrappers).
 
 ---
 
@@ -778,7 +757,7 @@ if (roleRank[member.role] < roleRank[minimumRole]) throw new Error("FORBIDDEN")
 ```ts
 // In a form component (via useMutation):
 onError: (err) => {
-  if (err.message === "UNAUTHORIZED") router.push("/login")
+  if (err.message === "UNAUTHORIZED") router.push("/sign-in")
   else if (err.message === "FORBIDDEN") toast.error("You don't have permission to do this.")
   else if (err.message.startsWith("VALIDATION:")) toast.error(err.message.replace("VALIDATION: ", ""))
   else toast.error(err.message || "Something went wrong.")
@@ -841,7 +820,7 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    // Required for better-auth server-side session reads in middleware
+    // Required for better-auth reads in interception layer (middleware / proxy) + RSC when applicable
     serverComponentsExternalPackages: ["better-auth"],
   },
   transpilePackages: ["@react-email/components"],
@@ -1140,9 +1119,9 @@ if (showNewBilling) return <NewBillingUI />
 return <LegacyBillingUI />
 ```
 
-### 15.6 Usage in Middleware
+### 15.6 Usage in `proxy` / middleware
 
-Use `flags` SDK `precompute()` in middleware to evaluate all flags once per request and encode into a cookie. This avoids N DB round-trips per Server Component.
+Use `flags` SDK `precompute()` in **`src/proxy.ts` (preferred on Next 16)** or **`middleware.ts`** so flags run once per request and can be encoded into a cookie. This avoids N DB round-trips per Server Component.
 
 ---
 
@@ -1152,7 +1131,7 @@ Use `flags` SDK `precompute()` in middleware to evaluate all flags once per requ
 
 Two-layer system using `@upstash/ratelimit` + Redis:
 
-- **Rate Limiting** — per-IP sliding window protecting all `/api/*` routes against abuse. Applied in Next.js middleware.
+- **Rate Limiting** — per-IP sliding window protecting all `/api/*` routes against abuse. Applied in **`src/proxy.ts`** (`proxy`) or legacy middleware before the framework hits handlers.
 - **Usage Quotas** — per-org monthly counters enforcing plan limits (e.g. "Free: 1,000 API calls/month"). Applied in Server Actions and route handlers.
 
 ### 16.2 Plan Definitions (`src/lib/quota/plans.ts`)
@@ -1243,7 +1222,7 @@ async function maybeSendQuotaWarningEmail(
 }
 ```
 
-### 16.5 Rate Limiting in Middleware
+### 16.5 Rate limiting (`proxy` / middleware)
 
 ```ts
 if (request.nextUrl.pathname.startsWith("/api/")) {
@@ -1395,7 +1374,7 @@ Fully public. Separate `layout.tsx` with marketing nav + footer. No auth state r
 
 Sections (top to bottom), each in a separate component:
 
-1. **Hero** — Headline, subheadline, two CTA buttons ("Get Started" → `/register`, "View Demo" → scroll). Optional animated gradient background.
+1. **Hero** — Headline, subheadline, two CTA buttons ("Get Started" → `/sign-up`, "View Demo" → scroll). Optional animated gradient background.
 2. **Logo Bar** — "Trusted by teams at…" + 5 placeholder SVG logos.
 3. **Features** — 3-column grid, lucide icons, title + description per card.
 4. **How It Works** — 3-step numbered flow.
@@ -1498,9 +1477,9 @@ export default defineConfig({
 - Member role cannot access settings (redirected to dashboard).
 
 **`invitations.spec.ts`**
-- Accept valid invitation token — user added to org.
-- Expired invitation token shows error and redirects to login.
-- Unauthenticated user visiting accept URL is redirected to login with callbackUrl preserved.
+- Accept valid **`/invite/[invitationId]`** flow — user added to org.
+- Expired invitation shows error (and may redirect to **`/sign-in?error=…`**).
+- Unauthenticated visitor on **`/invite/...`** is sent to **`/sign-in`** with **`callbackUrl`** preserved.
 
 **`marketing.spec.ts`**
 - Homepage loads with correct `<h1>` and CTA buttons.
@@ -1509,7 +1488,7 @@ export default defineConfig({
 - Blog index lists seed posts.
 - Blog post page renders MDX content.
 - Changelog page renders timeline entries.
-- "Get Started" button navigates to `/register`.
+- "Get Started" button navigates to `/sign-up`.
 - Legal pages load without errors.
 
 **`audit-logs.spec.ts`**
@@ -1720,19 +1699,19 @@ Implement in this sequence to avoid dependency issues:
 4. **better-auth** — `auth.ts` (using `drizzleAdapter(db)`), `auth-client.ts`, API route, `payload-access.ts` helper, `requireOrgRole()` helper.
 5. **Database migrations** — Run `npm run auth:generate && npm run auth:migrate` first, then `npm run migrate:create -- --name init && npm run migrate`.
 6. **`next.config.ts`** — Add `withPayload` wrapper, image remote patterns, transpile packages.
-7. **Middleware** — Rate limiting → auth check → active org resolution → org membership guard.
+7. **Request interception (`proxy`)** — `src/proxy.ts` export **`proxy`**: rate limiting → auth check → active org → org membership slug guard (§4.4). Complement with **`(protected)/layout.tsx`** session gate for UI parity.
 8. **Email** — Nodemailer transport + all 4 React Email templates.
 9. **TanStack Query** — Provider, query keys, base hooks.
-10. **Auth Pages** — Login, Register, Forgot Password, Reset Password (shadcn blocks).
+10. **Auth pages** — **`/sign-in`**, **`/sign-up`**, Forgot Password, Reset Password (shadcn blocks); **`(auth)/(guest)`** layout blocks signed-in drift on guest screens.
 11. **Marketing Pages** — `(marketing)` layout (nav + footer), install `next-mdx-remote` + `framer-motion` + `next-sitemap`, build all sections, Homepage, Features, Pricing, Blog, Changelog, Legal.
-12. **Dashboard Shell** — Sidebar, Header, Org Switcher, User Nav.
-13. **Account Pages** — Profile, Security, Sessions.
-14. **Server Actions** — `organization.ts`, `member.ts`, `account.ts` (all actions per Section 8).
-15. **Organization Pages** — List, Create (dual-write), Overview, Members (with Pending tab), Settings.
-16. **Invitation Flow** — `inviteMember()` action, `accept` route handler, `invitations.spec.ts`.
+12. **Dashboard Shell** — Sidebar, header, workspace (**team**) switcher, user nav (see §3 tree).
+13. **Account** — Profile + Security on **`/account`** (`/settings` alias optional).
+14. **Server Actions** — `organization.ts`, `member.ts`, `account.ts`, **`invitations.ts`** (all actions per Section 8 patterns).
+15. **Organization Pages** — List, Create (dual-write), Overview, **Team** route (members + Pending invitations), Settings.
+16. **Invitation Flow** — `inviteMember()`, email link to **`/invite/[invitationId]`**, **`acceptInvitationAction`**, optional **`GET /api/invitations/accept`** only if needed, `invitations.spec.ts`.
 17. **Audit Logs** — `createAuditLog()` helper, instrument all mutating actions, build dashboard table UI, CSV export route.
 18. **Feature Flags** — `flags` SDK adapter, flag definitions, instrument 2 example flags, manage via Payload admin.
-19. **Usage Quotas** — Plan definitions, `@upstash/ratelimit` wrappers, `checkQuota()`, `maybeSendQuotaWarningEmail()`, middleware rate limiting, usage dashboard page.
+19. **Usage Quotas** — Plan definitions, `@upstash/ratelimit` wrappers, `checkQuota()`, `maybeSendQuotaWarningEmail()`, **`proxy` / edge rate limiting**, usage dashboard page.
 20. **Webhooks (Svix)** — Add Svix Docker service, document first-boot token generation, Svix client singleton, typed event catalog, `sendWebhook()` helper, instrument org events, endpoint management UI.
 21. **Error handling** — `error.tsx`, `not-found.tsx`, 403 redirect pattern, loading skeletons audit.
 22. **Stripe Billing** — Stripe client singleton, plan-to-Price-ID map, `createCheckoutSession()` and `createPortalSession()` actions, Stripe webhook handler (`/api/webhooks/stripe`), sync handler that updates Payload org on subscription events, billing dashboard page, upgrade dialog, `BillingPortalButton`. Wire billing events to audit log and outbound webhooks.
@@ -2094,7 +2073,7 @@ Add an "SSO" tab to org settings (owner only). Displays:
 
 ### 31.6 SSO Login Flow
 
-1. User navigates to `/login`.
+1. User navigates to `/sign-in`.
 2. If the user's email domain matches an org with a SAML connection, a "Sign in with SSO" button appears below the email/password form.
 3. Clicking it calls `authClient.signIn.saml({ email })` — better-auth resolves the connection via Jackson and redirects to the IdP.
 4. IdP authenticates and posts the SAML assertion to `/api/auth/saml/callback`.

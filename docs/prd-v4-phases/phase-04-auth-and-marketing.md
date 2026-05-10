@@ -10,7 +10,7 @@ Public and pre-dashboard experience: authentication forms and full marketing sur
 
 | PRD section | Topic |
 |-------------|--------|
-| [§3 Routes](../../nextjs-multitenant-starter-PRD-v4.md) | `(frontend)/(auth)` + `(frontend)/(marketing)` |
+| [§3 Routes](../../nextjs-multitenant-starter-PRD-v4.md) | `(frontend)/(auth)/(guest)` (sign-in/up/recovery) + `(frontend)/(marketing)`; `(auth)`-only for **`/sign-out`** |
 | [§19 Forms pattern](../../nextjs-multitenant-starter-PRD-v4.md) | RHF + Zod + shadcn Form |
 | [§21 Marketing pages](../../nextjs-multitenant-starter-PRD-v4.md) | Sections, MDX, legal |
 | [§12 MDX frontmatter](../../nextjs-multitenant-starter-PRD-v4.md) | Blog + changelog |
@@ -22,7 +22,7 @@ Public and pre-dashboard experience: authentication forms and full marketing sur
 
 ## Deliverables (checklist)
 
-- [x] Auth pages: **`/sign-in`**, **`/sign-up`**, **`/forgot-password`**, **`/reset-password`** (repo routes; PRD “login/register” equivalents) + components under `src/components/auth/`.
+- [x] Auth pages: **`/sign-in`**, **`/sign-up`**, **`/forgot-password`**, **`/reset-password`** (under **`(frontend)/(auth)/(guest)`**) + **`/sign-out`** under **`(auth)`** only + components under `src/components/auth/`.
 - [x] `(frontend)/(marketing)/layout.tsx` — nav + footer (PRD §21.2).
 - [x] Homepage sections + `framer-motion` (PRD §21.3); Features, Pricing (marketing), Blog index + `[slug]`, Changelog, Legal.
 - [x] Content: `/content/blog/*.mdx`, `/content/changelog/*.mdx` — seed posts per PRD.
@@ -41,12 +41,18 @@ Checklist:
 - [x] Unit: validation schemas match PRD §19 (password rules, email shape); MDX/frontmatter helpers — `src/lib/auth/schemas.test.ts`, `src/lib/mdx/schemas.test.ts`, `src/lib/mdx/format.test.ts`.
 - [ ] Integration or E2E smoke: homepage + one blog slug render without auth (Phase 11 can own full `marketing.spec.ts` §23.2).
 
-## Key paths (expected)
+## Key paths (actual)
 
 ```
-src/app/(frontend)/(auth)/sign-in/page.tsx
-src/app/(frontend)/(auth)/sign-up/page.tsx
+src/app/(frontend)/(auth)/(guest)/layout.tsx        # redirects signed-in → /dashboard
+src/app/(frontend)/(auth)/(guest)/sign-in/page.tsx
+src/app/(frontend)/(auth)/(guest)/sign-up/page.tsx
+src/app/(frontend)/(auth)/(guest)/forgot-password/
+src/app/(frontend)/(auth)/(guest)/reset-password/
+src/app/(frontend)/(auth)/sign-out/page.tsx
 src/components/auth/
+src/lib/query/hooks.ts                                # session + refreshClientSessionCache
+src/components/marketing/marketing-auth-ctas.tsx     # nav/hero Dashboard when signed in
 src/app/(frontend)/(marketing)/page.tsx
 src/components/marketing/
 src/lib/mdx/
@@ -58,9 +64,11 @@ next-sitemap.config.cjs
 ## Verification
 
 - All marketing routes render without session.
+- After **email** sign-in without `callbackUrl`, user lands on **`/dashboard`** (alias → workspace home in Phase 5); marketing CTAs show **Dashboard** without a full reload (session query + `refreshClientSessionCache` after sign-in).
 - Blog/changelog MDX matches frontmatter spec §12.
 - Sitemap generates after `npm run build`.
 
 ## Notes
 
 - Marketing pricing toggle is **display-only** until Stripe (Phase 7); align copy with `src/lib/quota/plans.ts` when that exists.
+- **Guest auth layout** — [`(guest)/layout.tsx`](../../src/app/(frontend)/(auth)/(guest)/layout.tsx) prevents signed-in users from staying on sign-in/up/recovery screens (redirect to app entry).

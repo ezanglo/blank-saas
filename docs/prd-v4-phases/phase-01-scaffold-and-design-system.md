@@ -23,7 +23,7 @@ Establish the repository shape, UI foundation, and build tooling so later phases
 
 ## Deliverables (checklist)
 
-- [ ] `src/app/` skeleton: **`(frontend)/`** wraps `(marketing)`, `(auth)`, `(dashboard)` (`(frontend)/layout.tsx` owns the product `<html>`); **`(payload)/`** sibling for Payload admin (own document via `@payloadcms/next`); **`api/`** routes at `src/app/api/`.
+- [ ] `src/app/` skeleton: **`(frontend)/`** wraps `(marketing)`, `(auth)`, **`(protected)`** (authenticated app shell — Phase 5; PRD stubs may say `(dashboard)`) (`(frontend)/layout.tsx` owns the product `<html>`); **`(payload)/`** sibling for Payload admin (own document via `@payloadcms/next`); **`api/`** routes at `src/app/api/`.
 - [ ] Dependencies: framework stack from PRD §2 as needed for Phase 1 (Zod, RHF, TanStack Query can be installed here or when forms land).
 - [ ] **shadcn/ui** init — **new-york** style; `src/components/ui/`.
 - [ ] **Tailwind v4** + CSS variables; **Inter** via `next/font/google` in root layout.
@@ -52,7 +52,7 @@ src/app/layout.tsx               # mandatory Next root — pass‑through docume
 src/app/(frontend)/layout.tsx
 src/app/(frontend)/(marketing)/
 src/app/(frontend)/(auth)/
-src/app/(frontend)/(dashboard)/
+src/app/(frontend)/(protected)/    # authenticated product (Phase 5)
 src/app/(payload)/
 src/app/api/
 src/components/ui/

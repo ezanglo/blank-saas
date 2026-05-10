@@ -70,7 +70,8 @@ src/components/payload/Logo.tsx       # Payload admin branding (import map)
 src/components/payload/Icon.tsx
 src/app/(payload)/**                  # Payload API + admin app routes + import map
 src/app/api/auth/[...all]/route.ts
-src/app/(frontend)/(auth)/**          # product auth UI: /sign-in, /sign-up, /forgot-password, …
+src/app/(frontend)/(auth)/(guest)/** # product sign-in / sign-up / password recovery
+src/app/(frontend)/(auth)/sign-out/  # `/sign-out` (not under `(guest)`)
 src/app/(frontend)/admin/auth/**      # Payload external auth UI (see alignment below)
 ```
 
@@ -81,7 +82,7 @@ Payload is configured with **`admin.routes`** (`login`, `createFirstUser`, `forg
 | Area | App Router | Public URLs |
 |------|------------|-------------|
 | **Payload / CMS** | `src/app/(frontend)/admin/auth/*` | e.g. **`/admin/auth/sign-in`**, **`/admin/auth/sign-up`** |
-| **Product app** | `src/app/(frontend)/(auth)/*` | **`/sign-in`**, **`/sign-up`**, **`/forgot-password`**, **`/reset-password`**, **`/sign-out`** (no `/auth/` prefix) |
+| **Product app** | `src/app/(frontend)/(auth)/(guest)/*`, `...(auth)/sign-out/*` | **`/sign-in`**, **`/sign-up`**, **`/forgot-password`**, **`/reset-password`**, **`/sign-out`** (no `/auth/` prefix; guest screens redirect signed-in users — Phase 4) |
 
 Better Auth remains a **single** stack (`/api/auth/*`); both areas call the same **`authClient`** / **`auth`** instance.
 
