@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { AppShell } from "@/components/layout/app-shell";
+import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { auth } from "@/lib/auth";
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
 
@@ -14,7 +14,7 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
   }
 
   return (
-    <AppShell
+    <DashboardShell
       user={{
         name: session.user.name ?? null,
         email: session.user.email,
@@ -22,6 +22,6 @@ export default async function ProtectedLayout({ children }: { children: ReactNod
       }}
     >
       {children}
-    </AppShell>
+    </DashboardShell>
   );
 }

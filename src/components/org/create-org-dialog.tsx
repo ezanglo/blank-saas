@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -39,12 +40,20 @@ type Values = z.infer<typeof schema>;
 
 export function CreateOrganizationDialog({
   trigger,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
 }: {
   trigger?: React.ReactNode;
+  /** Controlled dialog (no trigger unless `trigger` is passed). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const controlled = openProp !== undefined && onOpenChangeProp !== undefined;
+  const open = controlled ? openProp : internalOpen;
+  const setOpen = controlled ? onOpenChangeProp : setInternalOpen;
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: { name: "", slug: "" },
@@ -76,12 +85,21 @@ export function CreateOrganizationDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? <Button size="sm">Create organization</Button>}
-      </DialogTrigger>
+      {controlled ? (
+        trigger ? (
+          <DialogTrigger asChild>{trigger}</DialogTrigger>
+        ) : null
+      ) : (
+        <DialogTrigger asChild>
+          {trigger ?? <Button size="sm">Create organization</Button>}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create organization</DialogTitle>
+          <DialogDescription>
+            Add a new workspace. Leave the slug blank to generate it from the name, or enter a custom URL segment.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)}>

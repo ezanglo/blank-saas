@@ -1,24 +1,28 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  type ForgotPasswordValues,
-  forgotPasswordSchema,
-} from "@/lib/auth/schemas";
+import { type ForgotPasswordValues, forgotPasswordSchema } from "@/lib/auth/schemas";
 
 export function ForgotPasswordForm() {
   const form = useForm<ForgotPasswordValues>({
@@ -49,37 +53,46 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input autoComplete="email" type="email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button
-          type="submit"
-          disabled={form.formState.isSubmitting}
-          className="w-full"
-        >
-          {form.formState.isSubmitting ? "Sending…" : "Send reset link"}
-        </Button>
-      </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        <Link
-          href="/sign-in"
-          className="underline underline-offset-4 hover:text-foreground"
-        >
-          Back to sign in
-        </Link>
-      </p>
-    </Form>
+    <Card className="gap-10 pt-8 pb-10">
+      <CardHeader className="text-center">
+        <CardTitle className="text-xl">Forgot password</CardTitle>
+        <CardDescription>
+          We&apos;ll email a reset link when SMTP is configured.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <FieldGroup className="gap-8">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="@container/form-item gap-6">
+                    <Field>
+                      <FieldLabel htmlFor="forgot-email">Email</FieldLabel>
+                      <FormControl>
+                        <Input id="forgot-email" autoComplete="email" type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </Field>
+                  </FormItem>
+                )}
+              />
+              <Field>
+                <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+                  {form.formState.isSubmitting ? "Sending…" : "Send reset link"}
+                </Button>
+              </Field>
+            </FieldGroup>
+          </form>
+        </Form>
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          <Link href="/sign-in" className="underline underline-offset-4 hover:text-primary">
+            Back to sign in
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   );
 }

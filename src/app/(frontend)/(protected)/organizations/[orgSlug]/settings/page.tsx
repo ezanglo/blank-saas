@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
 import { canUpdateOrganization } from "@/lib/auth/rbac";
 import { getMemberRole } from "@/lib/auth/require-org";
+import { redirectWorkspaceHome } from "@/lib/org/redirect-workspace-home";
 import { getOrganizationBySlug } from "@/lib/org/load-org";
 
 type Props = { params: Promise<{ orgSlug: string }> };
@@ -20,7 +21,7 @@ export default async function OrganizationSettingsPage({ params }: Props) {
   if (!session) redirect("/sign-in");
 
   const role = await getMemberRole(org.id, session.user.id);
-  if (!role) redirect("/dashboard");
+  if (!role) await redirectWorkspaceHome(session);
   if (!canUpdateOrganization(role)) redirect(`/organizations/${orgSlug}`);
 
   return <OrgSettingsForm org={{ id: org.id, name: org.name, slug: org.slug }} viewerRole={role} />;

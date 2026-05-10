@@ -9,6 +9,7 @@ import {
   isProtectedProductPath,
   sessionActiveOrg,
 } from "@/lib/proxy-guards";
+import { workspaceHomePath } from "@/lib/org/workspace-home";
 import * as schema from "@/payload-generated-schema";
 
 function clientIp(request: NextRequest) {
@@ -78,6 +79,14 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  const workspaceFallback = new URL(
+    await workspaceHomePath({
+      userId: session.user.id,
+      organizationId: resolvedActiveId ?? null,
+    }),
+    request.url,
+  );
+
   const orgSlug = pathname.match(/^\/organizations\/([^/]+)/)?.[1];
   if (orgSlug) {
     const slug = orgSlug;
@@ -88,7 +97,7 @@ export async function proxy(request: NextRequest) {
       .limit(1);
 
     if (!org) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(workspaceFallback);
     }
 
     const [membership] = await db
@@ -103,11 +112,11 @@ export async function proxy(request: NextRequest) {
       .limit(1);
 
     if (!membership) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(workspaceFallback);
     }
 
     if (resolvedActiveId && resolvedActiveId !== org.id) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(workspaceFallback);
     }
   }
 

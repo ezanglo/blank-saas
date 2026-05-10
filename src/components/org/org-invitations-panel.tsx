@@ -1,107 +1,100 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cancelInvitationAction } from "@/lib/actions/member";
+import { useMemo, useCallback } from "react";
+import { toast } from "sonner";
+
+import { getOrganizationInvitationColumns } from "@/components/org/org-invitations-table-columns";
+import { OrgDataTable } from "@/components/ui/org-data-table";
+import { cancelInvitationAction, inviteMemberAction } from "@/lib/actions/member";
+import type { OrgRole } from "@/lib/auth/rbac";
 import { useOrgInvitations } from "@/lib/query/hooks";
 import { queryKeys } from "@/lib/query/keys";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+
+function parseInviteRole(role: string): OrgRole {
+  const r = role.toLowerCase();
+  if (r === "owner" || r === "admin" || r === "member") return r;
+  return "member";
+}
 
 export function OrgInvitationsPanel({
   org,
   canManage,
+  embedded = false,
+  searchText,
 }: {
   org: { id: string };
   canManage: boolean;
+  embedded?: boolean;
+  searchText?: string;
 }) {
   const queryClient = useQueryClient();
   const { data, isLoading } = useOrgInvitations(org.id);
 
-  async function invalidate() {
+  const invalidate = useCallback(async () => {
     await queryClient.invalidateQueries({
       queryKey: queryKeys.invitations.list(org.id),
     });
-  }
+    await queryClient.invalidateQueries({
+      queryKey: queryKeys.members.list(org.id),
+    });
+  }, [org.id, queryClient]);
 
-  const pending = (data ?? []).filter((i) => i.status === "pending");
+  const invitations = data ?? [];
+  const q = searchText?.trim().toLowerCase() ?? "";
+  const filtered =
+    q.length === 0
+      ? invitations
+      : invitations.filter((i) => i.email.toLowerCase().includes(q));
+
+  const columns = useMemo(
+    () =>
+      getOrganizationInvitationColumns({
+        canEdit: canManage,
+        onCancelInvitation: async (invitationId) => {
+          try {
+            await cancelInvitationAction({
+              organizationId: org.id,
+              invitationId,
+            });
+            toast.success("Invitation cancelled");
+            await invalidate();
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Could not cancel invitation");
+          }
+        },
+        onResendInvitation: async (inv) => {
+          try {
+            await inviteMemberAction({
+              organizationId: org.id,
+              email: inv.email.trim().toLowerCase(),
+              role: parseInviteRole(inv.role),
+            });
+            toast.success(`Invitation email sent to ${inv.email}`);
+            await invalidate();
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Failed to resend invitation");
+          }
+        },
+      }),
+    [canManage, org.id, invalidate],
+  );
+
+  const emptyMessage =
+    invitations.length === 0 ? "No invitations." : "No invitations match your search.";
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-xl font-semibold tracking-tight">Invitations</h1>
-        <p className="text-sm text-muted-foreground">Pending invitations for this organization.</p>
-      </div>
+      {embedded ? null : (
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold tracking-tight">Invitations</h2>
+          <p className="text-sm text-muted-foreground">
+            Invitation history for this organization.
+          </p>
+        </div>
+      )}
 
-      <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              {canManage ? <TableHead className="w-[140px] text-end">Actions</TableHead> : null}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={canManage ? 4 : 3} className="text-muted-foreground">
-                  Loading…
-                </TableCell>
-              </TableRow>
-            ) : pending.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={canManage ? 4 : 3} className="text-muted-foreground">
-                  No pending invitations.
-                </TableCell>
-              </TableRow>
-            ) : (
-              pending.map((inv) => (
-                <TableRow key={inv.id}>
-                  <TableCell>{inv.email}</TableCell>
-                  <TableCell className="capitalize">{inv.role}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{inv.status}</Badge>
-                  </TableCell>
-                  {canManage ? (
-                    <TableCell className="text-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          const ok = confirm(`Cancel invitation to ${inv.email}?`);
-                          if (!ok) return;
-                          try {
-                            await cancelInvitationAction({
-                              organizationId: org.id,
-                              invitationId: inv.id,
-                            });
-                            toast.success("Invitation canceled");
-                            await invalidate();
-                          } catch (e) {
-                            toast.error(e instanceof Error ? e.message : "Could not cancel");
-                          }
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </TableCell>
-                  ) : null}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <OrgDataTable columns={columns} data={filtered} emptyMessage={emptyMessage} isLoading={isLoading} />
     </div>
   );
 }

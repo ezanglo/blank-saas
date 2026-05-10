@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { authApiUrl } from "@/lib/auth/app-url";
 import { authClient } from "@/lib/auth-client";
+import { activeOrganizationIdFromSession } from "@/lib/org/session-active-org";
 
 import { queryKeys } from "./keys";
 
@@ -32,6 +33,21 @@ export function useOrganizations() {
       >;
     },
   });
+}
+
+/** Active org from session + list (fallback: sole membership). Session query must be warmed. */
+export function useActiveOrganization() {
+  const { data: sessionData, isLoading: sessionLoading } = useSessionQuery();
+  const { data: orgs, isLoading: orgsLoading } = useOrganizations();
+  const id = activeOrganizationIdFromSession(sessionData);
+  const organization =
+    orgs?.find((o) => o.id === id) ?? (orgs?.length === 1 ? orgs[0] : undefined);
+  return {
+    organization,
+    organizationId: organization?.id ?? null,
+    slug: organization?.slug ?? null,
+    isLoading: sessionLoading || orgsLoading,
+  };
 }
 
 export type OrganizationMemberRow = {

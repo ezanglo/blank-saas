@@ -1,27 +1,19 @@
 import { Suspense } from "react";
 
 import { SignInForm } from "@/components/auth/sign-in-form";
+import { isGoogleOAuthConfigured } from "@/lib/auth/oauth-env";
 
-function SignInShell() {
+function SignInLoading() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-1 text-center md:text-left">
-        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-        <p className="text-sm text-muted-foreground">Welcome back</p>
-      </div>
-      <SignInForm />
-    </div>
+    <div className="h-[28rem] w-full animate-pulse rounded-xl border bg-card/40" aria-hidden />
   );
 }
 
-export default function AuthSignInPage() {
+export default async function AuthSignInPage() {
+  const googleEnabled = isGoogleOAuthConfigured();
   return (
-    <Suspense
-      fallback={
-        <div className="text-sm text-muted-foreground">Loading…</div>
-      }
-    >
-      <SignInShell />
+    <Suspense fallback={<SignInLoading />}>
+      <SignInForm googleEnabled={googleEnabled} />
     </Suspense>
   );
 }

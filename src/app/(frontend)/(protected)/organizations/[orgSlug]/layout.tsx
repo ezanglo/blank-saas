@@ -2,11 +2,10 @@ import type { ReactNode } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { OrgSubNav } from "@/components/layout/org-sub-nav";
 import { auth } from "@/lib/auth";
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
-import { canUpdateOrganization } from "@/lib/auth/rbac";
 import { getMemberRole } from "@/lib/auth/require-org";
+import { redirectWorkspaceHome } from "@/lib/org/redirect-workspace-home";
 import { getOrganizationBySlug } from "@/lib/org/load-org";
 
 type Props = {
@@ -23,12 +22,10 @@ export default async function OrganizationSlugLayout({ children, params }: Props
   const session = await auth.api.getSession({ headers: headersToWebRequestHeaders(h) });
   if (!session) redirect("/sign-in");
 
-  const role = await getMemberRole(org.id, session.user.id);
-  if (!role) redirect("/dashboard");
+  if (!(await getMemberRole(org.id, session.user.id))) await redirectWorkspaceHome(session);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <OrgSubNav orgSlug={orgSlug} showSettings={canUpdateOrganization(role)} />
       {children}
     </div>
   );

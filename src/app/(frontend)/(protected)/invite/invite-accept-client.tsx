@@ -138,7 +138,7 @@ export function InviteAcceptClient({ invitationId }: { invitationId: string }) {
         </CardContent>
         <CardFooter>
           <Button variant="outline" onClick={() => router.push("/dashboard")}>
-            Back to dashboard
+            Back to workspace
           </Button>
         </CardFooter>
       </Card>
