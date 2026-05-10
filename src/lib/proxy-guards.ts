@@ -8,7 +8,6 @@ export function isProtectedProductPath(pathname: string) {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/organizations") ||
     pathname.startsWith("/account") ||
-    pathname.startsWith("/settings") ||
     pathname.startsWith("/invite")
   );
 }

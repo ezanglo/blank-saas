@@ -1,8 +1,11 @@
 import { and, eq } from "@payloadcms/db-postgres/drizzle";
+import { precompute } from "flags/next";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { productFlags } from "@/lib/flags/flags";
+import { FLAGS_PRECOMPUTE_COOKIE } from "@/lib/flags/resolver";
 import { db } from "@/lib/db";
 import { apiRateLimiter } from "@/lib/quota/limiter";
 import {
@@ -121,6 +124,22 @@ export async function proxy(request: NextRequest) {
   }
 
   const res = NextResponse.next({ request: { headers: request.headers } });
+
+  if (process.env.FLAGS_SECRET) {
+    try {
+      const code = await precompute(productFlags);
+      res.cookies.set(FLAGS_PRECOMPUTE_COOKIE, code, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: 300,
+        secure: process.env.NODE_ENV === "production",
+      });
+    } catch {
+      /* dev without DB / misconfigured flags — omit cookie */
+    }
+  }
+
   return mergeResponseHeaders(res, sessionCookieHeaders);
 }
 

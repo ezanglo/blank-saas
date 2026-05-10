@@ -4,6 +4,8 @@ import IORedis from "ioredis";
 
 const apiPerMinute = Number(process.env.API_RATE_LIMIT_PER_MINUTE ?? 100);
 
+const monthlyQuotaId = "monthly";
+
 type LimitResult = {
   success: boolean;
   limit: number;
@@ -43,8 +45,13 @@ function createIoredisApiLimiter(redis: IORedis) {
   };
 }
 
-function createIoredisMonthlyQuotaLimiter(redis: IORedis, orgId: string, limit: number) {
-  const prefix = `quota:${orgId}`;
+function createIoredisMonthlyQuotaLimiter(
+  redis: IORedis,
+  orgId: string,
+  resource: string,
+  limit: number,
+) {
+  const prefix = `quota:${orgId}:${resource}`;
   return {
     async limit(id: string): Promise<LimitResult> {
       const monthKey = new Date().toISOString().slice(0, 7);
@@ -58,6 +65,17 @@ function createIoredisMonthlyQuotaLimiter(redis: IORedis, orgId: string, limit: 
         remaining: Math.max(0, limit - n),
         reset: Date.now() + 86_400_000 * 30,
         pending: Promise.resolve(),
+      };
+    },
+    async getRemaining(id: string): Promise<{ remaining: number; limit: number; reset: number }> {
+      const monthKey = new Date().toISOString().slice(0, 7);
+      const key = `${prefix}:${monthKey}:${id}`;
+      const raw = await redis.get(key);
+      const n = raw ? Number(raw) : 0;
+      return {
+        remaining: Math.max(0, limit - n),
+        limit,
+        reset: Date.now() + 86_400_000 * 30,
       };
     },
   };
@@ -105,7 +123,8 @@ export const apiRateLimiter = {
   limit: (id: string) => getApiLimiter().limit(id),
 };
 
-function getRedisForQuota(): IORedis | Redis | null {
+/** Shared Redis for quota counters + warn keys (PRD §16). */
+export function getRedisForQuota(): IORedis | Redis | null {
   const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (upstashUrl && upstashToken) return Redis.fromEnv();
@@ -117,8 +136,11 @@ function getRedisForQuota(): IORedis | Redis | null {
   return null;
 }
 
-/** Per-org monthly quota (PRD §16.3). Uses Upstash Ratelimit when REST env is set; otherwise ioredis fixed bucket. */
-export function createMonthlyQuotaLimiter(orgId: string, limit: number) {
+/**
+ * Per-org, per-resource monthly quota (PRD §16.3).
+ * Prefix includes resource key so `apiCallsPerMonth` and `membersPerOrg` do not share one counter.
+ */
+export function createMonthlyQuotaLimiter(orgId: string, resource: string, limit: number) {
   const redis = getRedisForQuota();
   if (!redis) {
     return {
@@ -139,9 +161,44 @@ export function createMonthlyQuotaLimiter(orgId: string, limit: number) {
     return new Ratelimit({
       redis,
       limiter: Ratelimit.fixedWindow(limit, "30 d"),
-      prefix: `quota:${orgId}`,
+      prefix: `quota:${orgId}:${resource}`,
     });
   }
 
-  return createIoredisMonthlyQuotaLimiter(redis, orgId, limit);
+  return createIoredisMonthlyQuotaLimiter(redis, orgId, resource, limit);
 }
+
+/** Read current usage without consuming quota (for usage dashboard). */
+export async function getMonthlyQuotaSnapshot(
+  orgId: string,
+  resource: string,
+  limit: number,
+): Promise<{ used: number; remaining: number; limit: number }> {
+  if (!Number.isFinite(limit) || limit === Number.POSITIVE_INFINITY) {
+    return { used: 0, remaining: Number.POSITIVE_INFINITY, limit: Number.POSITIVE_INFINITY };
+  }
+
+  const redis = getRedisForQuota();
+  if (!redis) {
+    return { used: 0, remaining: limit, limit };
+  }
+
+  if (redis instanceof Redis) {
+    const r = new Ratelimit({
+      redis,
+      limiter: Ratelimit.fixedWindow(limit, "30 d"),
+      prefix: `quota:${orgId}:${resource}`,
+    });
+    const rem = await r.getRemaining(monthlyQuotaId);
+    const used = Math.max(0, rem.limit - rem.remaining);
+    return { used, remaining: rem.remaining, limit: rem.limit };
+  }
+
+  const snap = await createIoredisMonthlyQuotaLimiter(redis, orgId, resource, limit).getRemaining(
+    monthlyQuotaId,
+  );
+  const used = Math.max(0, snap.limit - snap.remaining);
+  return { used, remaining: snap.remaining, limit: snap.limit };
+}
+
+export { monthlyQuotaId };

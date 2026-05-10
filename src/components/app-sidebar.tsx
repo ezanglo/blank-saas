@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Building2, LayoutDashboard, Settings, Users } from "lucide-react";
+import { Building2, LayoutDashboard, Settings } from "lucide-react";
 
 import { NavMain, type NavMainItem } from "@/components/nav-main";
 import type { NavSecondaryItem } from "@/components/nav-secondary";
@@ -38,10 +38,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       ];
 
   const bottomNav: NavSecondaryItem[] = slug
-    ? [
-        { title: "Team", url: `${base}/team`, icon: Users },
-        { title: "Settings", url: `${base}/settings`, icon: Settings },
-      ]
+    ? [{ title: "Organization Settings", url: `${base}/settings/general`, icon: Settings }]
     : [];
 
   return (

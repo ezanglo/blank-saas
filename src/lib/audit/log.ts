@@ -1,5 +1,8 @@
 import config from "@payload-config";
+import type { z } from "zod";
 import { getPayload } from "payload";
+
+import { AuditEvents, type AuditAction } from "@/lib/audit/events";
 
 type PayloadJsonValue =
   | string
@@ -21,37 +24,59 @@ function toPayloadJsonField(value: unknown): PayloadJsonValue {
   return undefined;
 }
 
-/**
- * Writes an audit row (Bypasses Payload `audit-logs` create access.)
- * Call after successful Server Actions that mutate org data.
- */
-export async function createAuditLog(input: {
+export type CreateAuditLogBase = {
   organizationId: string;
   actorId: string;
   actorEmail?: string | null;
   actorName?: string | null;
-  action: string;
   resourceType?: string | null;
   resourceId?: string | null;
-  metadata?: unknown;
   ipAddress?: string | null;
   userAgent?: string | null;
-}) {
+};
+
+/**
+ * Writes an audit row (bypasses Payload `audit-logs` create access.)
+ */
+export async function createAuditLog<T extends AuditAction>(
+  action: T,
+  data: CreateAuditLogBase & {
+    metadata?: z.infer<(typeof AuditEvents)[T]>;
+  },
+): Promise<void> {
+  const schema = AuditEvents[action];
+  const metadata =
+    data.metadata === undefined
+      ? undefined
+      : schema.parse(data.metadata);
+
   const payload = await getPayload({ config });
   await payload.create({
     collection: "audit-logs",
     data: {
-      organization: input.organizationId,
-      actorId: input.actorId,
-      actorEmail: input.actorEmail ?? undefined,
-      actorName: input.actorName ?? undefined,
-      action: input.action,
-      resourceType: input.resourceType ?? undefined,
-      resourceId: input.resourceId ?? undefined,
-      metadata: toPayloadJsonField(input.metadata),
-      ipAddress: input.ipAddress ?? undefined,
-      userAgent: input.userAgent ?? undefined,
+      organization: data.organizationId,
+      actorId: data.actorId,
+      actorEmail: data.actorEmail ?? undefined,
+      actorName: data.actorName ?? undefined,
+      action,
+      resourceType: data.resourceType ?? undefined,
+      resourceId: data.resourceId ?? undefined,
+      metadata: toPayloadJsonField(metadata),
+      ipAddress: data.ipAddress ?? undefined,
+      userAgent: data.userAgent ?? undefined,
     },
     overrideAccess: true,
+  });
+}
+
+/** Audit failures must not break user mutations (phase-06). */
+export function fireAndForgetAuditLog<T extends AuditAction>(
+  action: T,
+  data: CreateAuditLogBase & {
+    metadata?: z.infer<(typeof AuditEvents)[T]>;
+  },
+): void {
+  void createAuditLog(action, data).catch((err) => {
+    console.error("[audit]", action, err);
   });
 }

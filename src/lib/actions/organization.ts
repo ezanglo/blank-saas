@@ -1,9 +1,12 @@
 "use server";
 
+import { eq } from "@payloadcms/db-postgres/drizzle";
 import { headers } from "next/headers";
 import slugify from "slugify";
 
 import { auth } from "@/lib/auth";
+import { clientIpFromHeaders, userAgentFromHeaders } from "@/lib/audit/request-context";
+import { createAuditLog, fireAndForgetAuditLog } from "@/lib/audit/log";
 import { headersToWebRequestHeaders } from "@/lib/auth/headers";
 import {
   ForbiddenError,
@@ -11,6 +14,12 @@ import {
   requireOrgRole,
 } from "@/lib/auth/require-org";
 import { canDeleteOrganization, canUpdateOrganization } from "@/lib/auth/rbac";
+import { db } from "@/lib/db";
+import { deleteSvixApplication, provisionSvixApplication } from "@/lib/webhooks/provision";
+import { sendWebhookFireAndForget } from "@/lib/webhooks/send";
+import * as schema from "@/payload-generated-schema";
+
+type CreatedOrg = { id: string; name: string; slug: string };
 
 /** Create org via Better Auth (same row as Payload `organizations`). */
 export async function createOrganizationAction(input: {
@@ -23,10 +32,48 @@ export async function createOrganizationAction(input: {
     (input.slug ?? slugify(name, { lower: true, strict: true })).trim() || "org";
 
   const h = await headers();
-  return auth.api.createOrganization({
+  const webHeaders = headersToWebRequestHeaders(h);
+  const session = await auth.api.getSession({ headers: webHeaders });
+  if (!session) throw new ForbiddenError("Not signed in");
+
+  const result = await auth.api.createOrganization({
     body: { name, slug },
-    headers: headersToWebRequestHeaders(h),
+    headers: webHeaders,
   });
+
+  const org = result as CreatedOrg;
+  let orgId = org.id;
+  if (!orgId) {
+    const [row] = await db
+      .select({ id: schema.organizations.id })
+      .from(schema.organizations)
+      .where(eq(schema.organizations.slug, org.slug ?? slug))
+      .limit(1);
+    orgId = row?.id ?? "";
+  }
+  if (orgId) {
+    fireAndForgetAuditLog("org.created", {
+      organizationId: orgId,
+      actorId: session.user.id,
+      actorEmail: session.user.email,
+      actorName: session.user.name,
+      resourceType: "organization",
+      resourceId: orgId,
+      metadata: { name: org.name ?? name },
+      ipAddress: clientIpFromHeaders(h),
+      userAgent: userAgentFromHeaders(h),
+    });
+    await provisionSvixApplication({
+      organizationId: orgId,
+      name: org.name ?? name,
+    });
+    sendWebhookFireAndForget(orgId, "org.created", {
+      orgId,
+      name: org.name ?? name,
+    });
+  }
+
+  return result;
 }
 
 /** Update org name/slug (admin+). */
@@ -51,13 +98,32 @@ export async function updateOrganizationAction(input: {
     throw new Error("No fields to update");
   }
 
-  return auth.api.updateOrganization({
+  const result = await auth.api.updateOrganization({
     body: {
       organizationId: input.organizationId,
       data,
     },
     headers: webHeaders,
   });
+
+  fireAndForgetAuditLog("org.updated", {
+    organizationId: input.organizationId,
+    actorId: session.user.id,
+    actorEmail: session.user.email,
+    actorName: session.user.name,
+    resourceType: "organization",
+    resourceId: input.organizationId,
+    metadata: { changes: data as Record<string, unknown> },
+    ipAddress: clientIpFromHeaders(h),
+    userAgent: userAgentFromHeaders(h),
+  });
+
+  sendWebhookFireAndForget(input.organizationId, "org.updated", {
+    orgId: input.organizationId,
+    changes: data as Record<string, unknown>,
+  });
+
+  return result;
 }
 
 /** Delete org via Better Auth (owner only with default AC). */
@@ -70,6 +136,29 @@ export async function deleteOrganizationAction(organizationId: string) {
 
   const role = await getMemberRole(organizationId, session.user.id);
   if (!canDeleteOrganization(role)) throw new ForbiddenError();
+
+  const [row] = await db
+    .select({
+      name: schema.organizations.name,
+      svixAppId: schema.organizations.svixAppId,
+    })
+    .from(schema.organizations)
+    .where(eq(schema.organizations.id, organizationId))
+    .limit(1);
+
+  await createAuditLog("org.deleted", {
+    organizationId,
+    actorId: session.user.id,
+    actorEmail: session.user.email,
+    actorName: session.user.name,
+    resourceType: "organization",
+    resourceId: organizationId,
+    metadata: { name: row?.name ?? "" },
+    ipAddress: clientIpFromHeaders(h),
+    userAgent: userAgentFromHeaders(h),
+  });
+
+  void deleteSvixApplication(row?.svixAppId ?? null);
 
   return auth.api.deleteOrganization({
     body: { organizationId },

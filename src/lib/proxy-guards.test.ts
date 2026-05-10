@@ -11,7 +11,7 @@ describe("isProtectedProductPath", () => {
     expect(isProtectedProductPath("/dashboard")).toBe(true);
     expect(isProtectedProductPath("/organizations/acme")).toBe(true);
     expect(isProtectedProductPath("/account")).toBe(true);
-    expect(isProtectedProductPath("/settings/profile")).toBe(true);
+    expect(isProtectedProductPath("/organizations/acme/settings/general")).toBe(true);
     expect(isProtectedProductPath("/invite/abc")).toBe(true);
   });
 

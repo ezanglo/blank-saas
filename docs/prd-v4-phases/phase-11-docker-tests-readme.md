@@ -95,6 +95,17 @@ README.md
 - `pnpm run test:unit` and `pnpm run test:integration` pass in CI with documented env.
 - New contributor can boot from README only.
 
+## Svix environment (Phase 6)
+
+For outbound webhooks and the operational webhook handler, configure (see [`.env.example`](../../.env.example)):
+
+- **`SVIX_SERVER_URL`** — Svix API base (e.g. `http://localhost:8071` for self-hosted, or cloud URL).
+- **`SVIX_AUTH_TOKEN`** — Server API token used by the app to create apps/endpoints and send events.
+- **`SVIX_JWT_SECRET`** — Used by the **Svix server** container for JWT signing (set in compose when running local Svix; not the same as the app auth token).
+- **`SVIX_WEBHOOK_SECRET`** — Signing secret for **`POST /api/webhooks/svix`** (operational events from Svix). Format `whsec_` + base64 payload; must match the secret configured for that endpoint in Svix.
+
+Feature flags precompute (optional): set **`FLAGS_SECRET`** so [`src/proxy.ts`](../../src/proxy.ts) can emit the flags cookie consumed by [`resolveWebhooksEnabledFlag`](../../src/lib/flags/resolver.ts).
+
 ## Notes
 
 - Production checklist §27: real S3/SMTP, managed Redis option, admin email restriction, Stripe webhook URL, etc.

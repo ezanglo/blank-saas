@@ -7,7 +7,7 @@ export const AuditLogs: CollectionConfig = {
     defaultColumns: ["action", "organization", "actorEmail", "createdAt"],
   },
   access: {
-    read: ({ req }) => Boolean(req.user),
+    read: ({ req }) => req.user?.role === "admin",
     create: () => false,
     update: () => false,
     delete: ({ req }) => req.user?.role === "admin",

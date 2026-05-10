@@ -74,7 +74,7 @@ export function OrgSettingsForm({
   const canDestroy = canDeleteOrganization(viewerRole);
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col space-y-10">
+    <div className="flex w-full min-w-0 flex-col space-y-10">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">General</h1>
       </div>
@@ -225,7 +225,7 @@ function OrgUrlSettingsCard({
       await queryClient.invalidateQueries({ queryKey: queryKeys.session });
       router.refresh();
       if (slug !== initialSlug) {
-        router.replace(`/organizations/${slug}/settings`);
+        router.replace(`/organizations/${slug}/settings/general`);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not save");
