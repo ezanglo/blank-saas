@@ -3,7 +3,33 @@ import type {
   BreadcrumbHint,
   ErrorEvent,
   EventHint,
-} from "@sentry/core";
+  init,
+} from "@sentry/nextjs";
+
+type SentryDataCollection = NonNullable<Parameters<typeof init>[0]["dataCollection"]>;
+
+const IP_AND_PROXY_HEADERS = ["forwarded", "-ip", "remote-", "via", "-user"];
+
+/**
+ * Sentry v11 replaced `sendDefaultPii` with `dataCollection`, whose defaults collect cookies,
+ * user info and every HTTP body (sign-in/reset-password POSTs carry passwords). This restores the
+ * privacy posture we had on v10 (`sendDefaultPii` unset). Shared by client, server and edge init.
+ */
+export const sentryDataCollection: SentryDataCollection = {
+  userInfo: false,
+  cookies: false,
+  httpHeaders: {
+    request: { deny: IP_AND_PROXY_HEADERS },
+    response: { deny: IP_AND_PROXY_HEADERS },
+  },
+  httpBodies: [],
+  // Query strings are also stripped from event URLs in `sentryBeforeSend`.
+  urlQueryParams: false,
+  genAI: { inputs: false, outputs: false },
+  databaseQueryData: false,
+  queues: false,
+  graphQL: { document: false, variables: false },
+};
 
 function stripUrlQuery(url: string | undefined): string | undefined {
   if (!url) return url;

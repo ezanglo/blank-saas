@@ -20,5 +20,8 @@ export const TwoFactors: CollectionConfig = {
       admin: { description: "Encrypted backup codes (Better Auth)." },
     },
     { name: "verified", type: "checkbox", defaultValue: true },
+    // Better Auth 1.7+ brute-force lockout state for 2FA verification.
+    { name: "failedVerificationCount", type: "number", defaultValue: 0 },
+    { name: "lockedUntil", type: "date" },
   ],
 };

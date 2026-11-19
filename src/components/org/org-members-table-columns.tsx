@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { OrgColumnDef } from "@/components/ui/org-data-table";
 import { UserMinus } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -125,7 +125,7 @@ export function getOrganizationMembersColumns({
   canEdit = true,
   onRoleChange,
   onRemoveMember,
-}: MembersColumnsOpts): ColumnDef<OrganizationMemberRow>[] {
+}: MembersColumnsOpts): OrgColumnDef<OrganizationMemberRow>[] {
   return [
     {
       accessorKey: "user",
@@ -237,7 +237,7 @@ export function getOrganizationMembersColumns({
               />
             ),
           },
-        ] as ColumnDef<OrganizationMemberRow>[])
+        ] as OrgColumnDef<OrganizationMemberRow>[])
       : []),
   ];
 }

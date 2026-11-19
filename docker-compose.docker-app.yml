@@ -57,4 +57,4 @@ services:
     command:
       - sh
       - -c
-      - "node node_modules/payload/bin.js migrate && exec node node_modules/next/dist/bin/next start -H 0.0.0.0 -p 3000"
+      - "node --conditions=production node_modules/payload/bin.js migrate && exec node node_modules/next/dist/bin/next start -H 0.0.0.0 -p 3000"

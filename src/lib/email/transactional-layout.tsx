@@ -7,7 +7,7 @@ import {
   Html,
   Preview,
   Text,
-} from "@react-email/components";
+} from "react-email";
 import type { CSSProperties, ReactNode } from "react";
 
 const fontStack =

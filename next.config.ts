@@ -1,5 +1,5 @@
 import { withPayload } from "@payloadcms/next/withPayload";
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 import { securityHeadersConfig } from "./src/lib/security/http-headers";
@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ["better-auth", "payload"],
-  transpilePackages: ["@react-email/components"],
+  transpilePackages: ["react-email"],
   async headers() {
     return securityHeadersConfig();
   },

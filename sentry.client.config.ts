@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import {
   sentryBeforeBreadcrumb,
   sentryBeforeSend,
+  sentryDataCollection,
   sentryEnvironment,
   sentryRelease,
 } from "./src/lib/sentry/options";
@@ -20,6 +21,7 @@ if (dsn) {
       process.env.NODE_ENV === "production"
         ? Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? "0.1")
         : 1,
+    dataCollection: sentryDataCollection,
     beforeSend: sentryBeforeSend,
     beforeBreadcrumb: sentryBeforeBreadcrumb,
   });

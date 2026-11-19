@@ -1,4 +1,4 @@
-import { Heading, Link, Text } from "@react-email/components";
+import { Heading, Link, Text } from "react-email";
 
 import { emailText, TransactionalEmailLayout } from "@/lib/email/transactional-layout";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
+import type { OrgColumnDef } from "@/components/ui/org-data-table";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useTransition } from "react";
@@ -47,7 +47,7 @@ export function OrgPermissionsView({
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
 
-  const columns = useMemo<ColumnDef<OrgPermissionRow>[]>(
+  const columns = useMemo<OrgColumnDef<OrgPermissionRow>[]>(
     () => [
       {
         id: "subject",
@@ -107,7 +107,7 @@ export function OrgPermissionsView({
                   Revoke
                 </Button>
               ),
-            } satisfies ColumnDef<OrgPermissionRow>,
+            } satisfies OrgColumnDef<OrgPermissionRow>,
           ]
         : []),
     ],

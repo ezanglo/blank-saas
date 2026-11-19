@@ -1,6 +1,6 @@
 "use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
+import type { OrgColumnDef } from "@/components/ui/org-data-table";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useTransition } from "react";
@@ -41,7 +41,7 @@ export function AuditLogsView({
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
 
-  const columns = useMemo<ColumnDef<AuditLogRow>[]>(
+  const columns = useMemo<OrgColumnDef<AuditLogRow>[]>(
     () => [
       {
         accessorKey: "actorEmail",
