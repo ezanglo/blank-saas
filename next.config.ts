@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ["better-auth", "payload"],
-  transpilePackages: ["@react-email/components"],
+  transpilePackages: ["react-email"],
   async headers() {
     return securityHeadersConfig();
   },

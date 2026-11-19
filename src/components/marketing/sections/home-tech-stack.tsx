@@ -64,7 +64,7 @@ const groups: StackGroup[] = [
       "@upstash/ratelimit",
       "ioredis",
       "flags",
-      "@react-email/components",
+      "react-email",
       "nodemailer",
     ],
     why:
