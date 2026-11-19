@@ -82,7 +82,7 @@ export async function createOrgWebhookEndpointAction(input: {
 
   await svix.endpoint.create(appId, {
     url,
-    filterTypes: input.filterTypes.length ? input.filterTypes : null,
+    eventTypes: input.filterTypes.length ? input.filterTypes : null,
   });
 
   fireAndForgetAuditLog("webhook.endpoint_created", {

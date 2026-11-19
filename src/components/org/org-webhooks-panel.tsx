@@ -176,7 +176,7 @@ export function OrgWebhooksPanel({
                   </TableCell>
                   <TableCell>{ep.disabled ? "Disabled" : "Active"}</TableCell>
                   <TableCell className="text-muted-foreground max-w-[200px] truncate text-xs">
-                    {(ep.filterTypes ?? []).join(", ") || "All"}
+                    {(ep.eventTypes ?? []).join(", ") || "All"}
                   </TableCell>
                   <TableCell>
                     <Button
