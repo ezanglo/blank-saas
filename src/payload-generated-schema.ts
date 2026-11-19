@@ -126,6 +126,7 @@ export const media = pgTable(
     id: uuid("id").defaultRandom().primaryKey(),
     alt: varchar("alt"),
     prefix: varchar("prefix").default("media"),
+    _objectKey: varchar("_objectkey"),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
