@@ -3,6 +3,7 @@ import * as migration_20260510_090824_stripe_processed_events from './20260510_0
 import * as migration_20260510_140211_permissions_resource_indexes from './20260510_140211_permissions_resource_indexes';
 import * as migration_20260510_164128_sso_providers from './20260510_164128_sso_providers';
 import * as migration_20261119_163631 from './20261119_163631';
+import * as migration_20261119_164707 from './20261119_164707';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20261119_163631.up,
     down: migration_20261119_163631.down,
-    name: '20261119_163631'
+    name: '20261119_163631',
+  },
+  {
+    up: migration_20261119_164707.up,
+    down: migration_20261119_164707.down,
+    name: '20261119_164707'
   },
 ];

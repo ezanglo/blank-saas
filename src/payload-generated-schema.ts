@@ -98,6 +98,14 @@ export const two_factors = pgTable(
     secret: varchar("secret").notNull(),
     backupCodes: varchar("backup_codes").notNull(),
     verified: boolean("verified").default(true),
+    failedVerificationCount: numeric("failed_verification_count", {
+      mode: "number",
+    }).default(0),
+    lockedUntil: timestamp("locked_until", {
+      mode: "string",
+      withTimezone: true,
+      precision: 3,
+    }),
     updatedAt: timestamp("updated_at", {
       mode: "string",
       withTimezone: true,
