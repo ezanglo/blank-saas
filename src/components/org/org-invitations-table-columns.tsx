@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { ColumnDef } from "@tanstack/react-table";
+import type { OrgColumnDef } from "@/components/ui/org-data-table";
 import { Ban, Copy, Loader2, RefreshCw, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 
@@ -175,7 +175,7 @@ export function getOrganizationInvitationColumns({
   canEdit = true,
   onCancelInvitation,
   onResendInvitation,
-}: InvitationColumnsOpts): ColumnDef<OrgInvitationRow>[] {
+}: InvitationColumnsOpts): OrgColumnDef<OrgInvitationRow>[] {
   return [
     {
       accessorKey: "email",

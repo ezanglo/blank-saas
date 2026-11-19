@@ -2,9 +2,11 @@
 
 import {
   flexRender,
-  getCoreRowModel,
-  useReactTable,
+  metaHelper,
+  tableFeatures,
+  useTable,
   type ColumnDef,
+  type RowData,
 } from "@tanstack/react-table";
 
 import {
@@ -17,29 +19,27 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
-function columnClassName(meta: unknown): string | undefined {
-  if (meta && typeof meta === "object" && "className" in meta) {
-    const c = (meta as { className?: unknown }).className;
-    return typeof c === "string" ? c : undefined;
-  }
-  return undefined;
-}
+const orgTableFeatures = tableFeatures({
+  columnMeta: metaHelper<{ className?: string }>(),
+});
 
-export function OrgDataTable<TData, TValue>({
+export type OrgColumnDef<TData extends RowData> = ColumnDef<typeof orgTableFeatures, TData>;
+
+export function OrgDataTable<TData extends RowData>({
   columns,
   data,
   emptyMessage,
   isLoading,
 }: {
-  columns: ColumnDef<TData, TValue>[];
+  columns: OrgColumnDef<TData>[];
   data: TData[];
   emptyMessage: string;
   isLoading?: boolean;
 }) {
-  const table = useReactTable({
+  const table = useTable({
+    features: orgTableFeatures,
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
     getRowId: (row, index) => {
       if (typeof row === "object" && row !== null && "id" in row) {
         const id = (row as { id: unknown }).id;
@@ -58,7 +58,7 @@ export function OrgDataTable<TData, TValue>({
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
-                  className={cn(columnClassName(header.column.columnDef.meta))}
+                  className={cn(header.column.columnDef.meta?.className)}
                 >
                   {header.isPlaceholder
                     ? null
@@ -80,11 +80,11 @@ export function OrgDataTable<TData, TValue>({
             </TableRow>
           ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                {row.getVisibleCells().map((cell) => (
+              <TableRow key={row.id}>
+                {row.getAllCells().map((cell) => (
                   <TableCell
                     key={cell.id}
-                    className={cn(columnClassName(cell.column.columnDef.meta))}
+                    className={cn(cell.column.columnDef.meta?.className)}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
