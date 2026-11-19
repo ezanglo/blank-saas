@@ -1,5 +1,5 @@
 import { withPayload } from "@payloadcms/next/withPayload";
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 import { securityHeadersConfig } from "./src/lib/security/http-headers";

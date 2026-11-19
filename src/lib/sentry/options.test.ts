@@ -1,8 +1,11 @@
-import type { Breadcrumb } from "@sentry/core";
-import type { ErrorEvent } from "@sentry/core";
+import type { Breadcrumb, ErrorEvent } from "@sentry/nextjs";
 import { describe, expect, it } from "vitest";
 
-import { sentryBeforeBreadcrumb, sentryBeforeSend } from "./options";
+import {
+  sentryBeforeBreadcrumb,
+  sentryBeforeSend,
+  sentryDataCollection,
+} from "./options";
 
 describe("sentryBeforeSend", () => {
   it("strips query strings from request URLs and removes cookies from headers", () => {
@@ -45,5 +48,18 @@ describe("sentryBeforeBreadcrumb", () => {
         {},
       ),
     ).toEqual(expect.objectContaining({ category: "xhr" }));
+  });
+});
+
+describe("sentryDataCollection", () => {
+  // Sentry v11 collects bodies, cookies and user info unless told otherwise.
+  it("opts out of PII-bearing collection by default", () => {
+    expect(sentryDataCollection).toMatchObject({
+      userInfo: false,
+      cookies: false,
+      httpBodies: [],
+      urlQueryParams: false,
+      databaseQueryData: false,
+    });
   });
 });
